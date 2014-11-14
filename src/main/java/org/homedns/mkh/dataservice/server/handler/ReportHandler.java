@@ -1,0 +1,62 @@
+/*
+ * Copyright 2014 Mikhail Khodonov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * $Id$
+ */
+
+package org.homedns.mkh.dataservice.server.handler;
+
+import java.io.Serializable;
+import java.util.List;
+import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.dataservice.server.Context;
+import org.homedns.mkh.dataservice.server.report.Excel;
+import org.homedns.mkh.dataservice.shared.Request;
+import org.homedns.mkh.dataservice.shared.Response;
+import org.homedns.mkh.dataservice.shared.ReportRequest;
+
+/**
+ * Report request handler
+ *
+ */
+public class ReportHandler extends GenericRequestHandler {
+
+	public ReportHandler( ) { 
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.server.handler.RequestHandler#execute(org.homedns.mkh.dataservice.shared.Request)
+	 */
+	@Override
+	public Response execute( Request request ) throws Exception {
+		ReportRequest reportRequest = ( ReportRequest )request;
+		DataBuffer db = Context.getInstance( ).getDataBufferManager( ).getReportDataBuffer( 
+			reportRequest.getDataBufferName( ) 
+		);
+		List< Serializable > args = ( 
+			( reportRequest.getArgs( ) == null ) ? 
+			null : 
+			reportRequest.getArgs( ).get( 0 )
+		);
+		int iResult = ( args == null ) ? db.retrieve( ) : db.retrieve( args );
+		Response response = createResponse( request );
+		String sFile = db.getEnvironment( ).getDataBufferFilename( db.getDataBufferName( ) );
+		String sTemplate = sFile.replaceFirst( ".dbuf", "_template.xls" );
+		Excel excel = new Excel( sTemplate, db );
+		response.setDownloadFileName( excel.getExcelFile( ) );
+		response.setResult( iResult );
+		return( response );
+	}
+}
