@@ -6,7 +6,7 @@
 
     <name>Dataservice</name>
     <description>Framework library for building GWT applications using the MVP design pattern. On one hand it provides functionality separation, on other, easy data transfer from server to client and vice versa using GWT RPC service</description>
-    <url>https://github.com/khomisha/dataservice</url>
+    <url>https://github.com/khomisha/dataservice.git</url>
 
     <licenses>
         <license>
