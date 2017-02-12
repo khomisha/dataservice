@@ -19,9 +19,11 @@
 package org.homedns.mkh.dataservice.server.handler;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.server.Context;
+import org.homedns.mkh.dataservice.server.DataBufferManager;
 import org.homedns.mkh.dataservice.server.report.Excel;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
@@ -32,6 +34,7 @@ import org.homedns.mkh.dataservice.shared.ReportRequest;
  *
  */
 public class ReportHandler extends GenericRequestHandler {
+	private DataBufferManager dbm;
 
 	public ReportHandler( ) { 
 	}
@@ -41,17 +44,20 @@ public class ReportHandler extends GenericRequestHandler {
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
+		dbm = Context.getInstance( ).getDataBufferManager( );
 		ReportRequest reportRequest = ( ReportRequest )request;
-		DataBuffer db = Context.getInstance( ).getDataBufferManager( ).getReportDataBuffer( 
-			reportRequest.getDataBufferName( ) 
-		);
-		List< Serializable > args = ( 
-			( reportRequest.getArgs( ) == null ) ? 
-			null : 
-			reportRequest.getArgs( ).get( 0 )
-		);
-		int iResult = ( args == null ) ? db.retrieve( ) : db.retrieve( args );
+		List< Serializable > args = new ArrayList< Serializable >( );
+		args.add( reportRequest.getDataBufferName( ) );
+		DataBuffer db = dbm.getReportDataBuffer( reportRequest.getDataBufferName( ) );
+		int iResult;
+		if( reportRequest.getArgs( ) == null || reportRequest.getArgs( ).isEmpty( ) ) {	
+			iResult = db.retrieve( );
+		} else {
+			args = reportRequest.getArgs( ).get( 0 );
+			iResult = db.retrieve( args );
+		}
 		Response response = createResponse( request );
+		response.setID( request.getID( ) );
 		String sFile = db.getEnvironment( ).getDataBufferFilename( db.getDataBufferName( ) );
 		String sTemplate = sFile.replaceFirst( ".dbuf", "_template.xls" );
 		Excel excel = new Excel( sTemplate, db );

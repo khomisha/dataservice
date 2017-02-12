@@ -39,7 +39,12 @@ public class DeleteHandler extends GenericRequestHandler {
 	public Response execute( Request request ) throws Exception {
 		DeleteRequest deleteRequest = ( DeleteRequest )request;
 		DataBuffer db = getDataBuffer( deleteRequest );
-		db.save( DataBuffer.DELETE, DataBuffer.JSON, deleteRequest.getData( ) );
+		db.save( 
+			DataBuffer.DELETE, 
+			DataBuffer.JSON, 
+			deleteRequest.isBatchUpdate( ), 
+			deleteRequest.getData( )
+		);
 		Response response = createResponse( request );
 		response.setRowCount( db.getRowCount( ) );
 		response.setJsonData( db.getJson( ) );

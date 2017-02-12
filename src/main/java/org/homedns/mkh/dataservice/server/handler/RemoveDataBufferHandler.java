@@ -35,7 +35,7 @@ public class RemoveDataBufferHandler extends GenericRequestHandler {
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
-		Context.getInstance( ).getDataBufferManager( ).remove( request.getID( ) );
+		Context.getInstance( ).getDataBufferManager( ).closeDataBuffer( request.getID( ) );
 		Response response = createResponse( request );
 		response.setResult( Response.SUCCESS );
 		return( response );

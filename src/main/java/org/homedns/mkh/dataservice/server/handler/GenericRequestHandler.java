@@ -59,6 +59,18 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	}
 	
 	/**
+	 * Closes specified data buffer and removes it from data buffer manager registry
+	 * 
+	 * @param request
+	 *            the request object
+	 */
+	protected void closeDataBuffer( Request request ) {
+		Context.getInstance( ).getDataBufferManager( ).closeDataBuffer( 
+			request.getID( ) 
+		);
+	}
+	
+	/**
 	 * Creates response object
 	 * 
 	 * @param request

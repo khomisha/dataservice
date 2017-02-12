@@ -40,7 +40,12 @@ public class InsertHandler extends GenericRequestHandler {
 	public Response execute( Request request ) throws Exception {
 		InsertRequest insertRequest = ( InsertRequest )request;
 		DataBuffer db = getDataBuffer( insertRequest );
-		db.save( DataBuffer.INSERT, DataBuffer.JSON, insertRequest.getData( ) );
+		db.save( 
+			DataBuffer.INSERT, 
+			DataBuffer.JSON, 
+			insertRequest.isBatchUpdate( ), 
+			insertRequest.getData( ) 
+		);
 		Response response = createResponse( request );
 		ReturnValue rv = new ReturnValue( );
 		rv.addAll( db.getReturnValue( ) );

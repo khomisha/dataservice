@@ -18,11 +18,11 @@
 
 package org.homedns.mkh.dataservice.server;
 
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+
 import javax.naming.ConfigurationException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -36,14 +36,14 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 import org.homedns.mkh.databuffer.DBTransaction;
 import org.homedns.mkh.databuffer.DataBuffer;
-import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
 import org.homedns.mkh.dataservice.shared.Id;
-import com.akiban.sql.StandardException;
-import java.io.IOException;
+
 import java.io.Serializable;
+
 import javax.security.auth.callback.TextInputCallback;
 
 /**
@@ -109,9 +109,7 @@ public class SecurityService implements LoginModule {
 	private Subject _subject;
     private CallbackHandler _callbackHandler;
     private Map< String, ? > _options;
-    private String _sLogin;
-    private Locale _locale;
-    private String _sClientDatetimeFmt;
+    private Callback[] _callbacks;
 	
 	/**
 	 * @see javax.security.auth.spi.LoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
@@ -133,7 +131,7 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean login( ) throws LoginException {
-        Callback[] callbacks = new Callback[] {
+        _callbacks = new Callback[] {
         	new NameCallback( "username" ),
         	new PasswordCallback( "password: ", false ),
         	new LanguageCallback( ),
@@ -142,25 +140,21 @@ public class SecurityService implements LoginModule {
         boolean bLogin = false;
         CheckupService cs = null;
         try {
-			_callbackHandler.handle( callbacks );
-			_sLogin = ( ( NameCallback )callbacks[ 0 ] ).getName( );
-			String sPwd = String.valueOf( ( ( PasswordCallback )callbacks[ 1 ] ).getPassword( ) );
-			_locale = ( ( LanguageCallback )callbacks[ 2 ] ).getLocale( );
-			_sClientDatetimeFmt = ( ( TextInputCallback )callbacks[ 3 ] ).getText( );
+			_callbackHandler.handle( _callbacks );
 			String sClassName = ( String )_options.get( "checkup_service_class" );
-			LOG.info( "locale: " + _locale.getLanguage( ) );
-			LOG.info( "datetime format: " + _sClientDatetimeFmt );
+			LOG.info( "locale: " + getLocale( ).getLanguage( ) );
+			LOG.info( "datetime format: " + getClientDateFormat( ) );
 			LOG.debug( "checkup service class: " + sClassName );
 			cs = ( CheckupService )Class.forName( sClassName ).newInstance( );
 			cs.init( 
 				_options, 
 				getDataSource( "jdbc_login_resource_name" ), 
-				_locale, 
-				new SimpleDateFormat( _sClientDatetimeFmt ) 
+				getLocale( ), 
+				new SimpleDateFormat( getClientDateFormat( ) ) 
 			);
 			if( !cs.isLocked( ) ) {
 				cs.incrementCount( );
-	        	bLogin = cs.isValidUser( _sLogin, sPwd );
+	        	bLogin = cs.isValidUser( getLogin( ), getPass( ) );
 	            if( bLogin ) {
 	            	cs.resetCount( );
 	            }
@@ -178,7 +172,7 @@ public class SecurityService implements LoginModule {
         }
         if( !bLogin ) {
         	throw new FailedLoginException( 
-        		Context.getBundle( _locale ).getString( "invalidLogin" ) 
+        		Context.getBundle( getLocale( ) ).getString( "invalidLogin" ) 
         	); 
         }
        	return( bLogin );
@@ -206,20 +200,16 @@ public class SecurityService implements LoginModule {
 	public boolean commit( ) throws LoginException {
 		DataBufferManager dbm = null;
 		try {
-			DataSource dataSource = getDataSource( "jdbc_db_resource_name" );
-			dbm = new DataBufferManager( 
-				new DBTransaction( dataSource ),
-				_locale,
-				new SimpleDateFormat( _sClientDatetimeFmt )
-			);
-			Context.getInstance( ).setDataBufferManager( dbm );
+			dbm = getDataBufferMgr( );
+			_subject.getPrincipals( ).add( new UserPrincipal( getLogin( ) ) );
+			_subject.getPrincipals( ).add( new LocalePrincipal( getLocale( ) ) );
 			// see user_access_right.dbuf for example
-			Id accessDBId = new Id( );
-			DataBuffer accessDB = getDataBuffer( dbm, "access_rights_db", accessDBId );
-			accessDB.retrieve( Arrays.asList( new Serializable[] { _sLogin } ) );
-			_subject.getPrincipals( ).add( new UserPrincipal( _sLogin ) );
-			_subject.getPrincipals( ).add( new LocalePrincipal( _locale ) );
-			_subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, accessDBId ) );
+			String sDataBufferName = ( String )_options.get( "access_rights_db" );
+			Id id = new Id( );
+			id.setName( sDataBufferName );
+			DataBuffer accessDB = getDataBuffer( dbm, id );
+			accessDB.retrieve( Arrays.asList( new Serializable[] { getLogin( ) } ) );
+			_subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, id ) );
 		}
 		catch( Exception e ) {
 			if( dbm != null ) {
@@ -238,8 +228,6 @@ public class SecurityService implements LoginModule {
 	@Override
 	public boolean abort( ) throws LoginException {
 		_subject = null;
-	    _sLogin = null;
-	    _locale = null;
 		return( true );
 	}
 
@@ -257,21 +245,73 @@ public class SecurityService implements LoginModule {
 		}
 		finally {
 			_subject = null;
-		    _sLogin = null;
-		    _locale = null;
 		}
 		return( true );
 	}
 
 	/**
-	 * Returns login
+	 * Returns subject, @see javax.security.auth.Subject
+	 * 
+	 * @return the subject
+	 */
+	protected Subject getSubject( ) {
+		return( _subject );
+	}
+	
+	/**
+	 * Returns input parameters
+	 * 
+	 * @return the input parameters callback array
+	 */
+	protected Callback[] getInputParams( ) {
+		return( _callbacks );
+	}
+	
+	/**
+	 * Returns options defined in jaas.config
+	 * 
+	 * @return the options
+	 */
+	protected Map< String, ? > getOptions( ) {
+		return( _options );
+	}
+	
+	/**
+	 * Returns input login
 	 * 
 	 * @return the login
 	 */
 	protected String getLogin( ) {
-		return( _sLogin );
+		return( ( ( NameCallback )_callbacks[ 0 ] ).getName( ) );
 	}
 
+	/**
+	 * Returns input password
+	 * 
+	 * @return the password
+	 */
+	protected String getPass( ) {
+		return( String.valueOf( ( ( PasswordCallback )_callbacks[ 1 ] ).getPassword( ) ) );
+	}
+	
+	/**
+	 * Returns client locale
+	 * 
+	 * @return the locale
+	 */
+	protected Locale getLocale( ) {
+		return( ( ( LanguageCallback )_callbacks[ 2 ] ).getLocale( ) );
+	}
+	
+	/**
+	 * Returns client date time format
+	 * 
+	 * @return the date time format
+	 */
+	protected String getClientDateFormat( ) {
+		return( ( ( TextInputCallback )_callbacks[ 3 ] ).getText( ) );
+	}
+	
 	/**
 	 * Returns data source.
 	 * 
@@ -282,14 +322,14 @@ public class SecurityService implements LoginModule {
 	 * 
 	 * @throws NamingException
 	 */
-	private DataSource getDataSource( String sResourceName ) throws NamingException {
+	protected DataSource getDataSource( String sResourceName ) throws NamingException {
 		javax.naming.Context initContext = new InitialContext( );
 		javax.naming.Context envContext = ( javax.naming.Context )initContext.lookup( 
 			"java:/comp/env" 
 		);
 		if( envContext == null ) {
 			throw new ConfigurationException( 
-				Context.getBundle( _locale ).getString( "noContext" ) 
+				Context.getBundle( getLocale( ) ).getString( "noContext" ) 
 			);
 		}
 		DataSource dataSource = ( DataSource )envContext.lookup( 
@@ -297,10 +337,31 @@ public class SecurityService implements LoginModule {
 		);
 		if( dataSource == null ) {
 			throw new ConfigurationException( 
-				Context.getBundle( _locale ).getString( "noDatasource" ) + ": " + sResourceName 
+				Context.getBundle( getLocale( ) ).getString( "noDatasource" ) + ": " + sResourceName 
 			);			
 		}
 		return( dataSource );
+	}
+	
+	/**
+	 * Returns data buffer manager
+	 * 
+	 * @return the data buffer manager
+	 * 
+	 * @throws Exception
+	 */
+	protected DataBufferManager getDataBufferMgr( ) throws Exception {
+		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
+		if( dbm == null ) {
+			DataSource dataSource = getDataSource( "jdbc_db_resource_name" );
+			dbm = new DataBufferManager( 
+				new DBTransaction( dataSource ),
+				getLocale( ),
+				new SimpleDateFormat( getClientDateFormat( ) )
+			);
+			Context.getInstance( ).setDataBufferManager( dbm );
+		}
+		return( dbm );
 	}
 	
 	/**
@@ -308,27 +369,15 @@ public class SecurityService implements LoginModule {
 	 * 
 	 * @param dbm
 	 *            the data buffer manager
-	 * @param sKey
-	 *            the key word in JAAS configuration file defining data buffer
-	 *            name
 	 * @param id
 	 *            the identification object
 	 * 
 	 * @return the data buffer
 	 * 
-	 * @throws InvalidDatabufferDesc 
-	 * @throws StandardException 
-	 * @throws SQLException 
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	private DataBuffer getDataBuffer( 
-		DataBufferManager dbm, 
-		String sKey, 
-		Id id 
-	) throws InvalidDatabufferDesc, IOException, SQLException, StandardException {
-		String sDataBufferName = ( String )_options.get( sKey );
-		LOG.debug( "security service db's: " + sDataBufferName );
-		id.setName( sDataBufferName );
+	private DataBuffer getDataBuffer( DataBufferManager dbm, Id id ) throws Exception {
+		LOG.debug( "security service db's: " + id.getName( ) );
 		return( dbm.getDataBuffer( id ) );
 	}
 }

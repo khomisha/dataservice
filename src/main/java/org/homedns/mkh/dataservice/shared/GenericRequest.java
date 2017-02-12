@@ -32,8 +32,10 @@ public class GenericRequest implements Request {
 	private String _sResponseClassName;
 	private boolean _bInitPresenter = true;
 	private String _sSenderClassName;
+	private boolean bBatch;
 
 	public GenericRequest( ) { 
+		setBatchUpdate( false );
 		setSenderType( RPCRequestSender.class.getName( ) );
 	}
 
@@ -128,5 +130,19 @@ public class GenericRequest implements Request {
 	@Override
 	public void setResponseClassName( String sResponseClassName ) {
 		_sResponseClassName = sResponseClassName;
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#setBatchUpdate(boolean)
+	 */
+	public void setBatchUpdate( boolean bBatch ) {
+		this.bBatch = bBatch;
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#isBatchUpdate()
+	 */
+	public boolean isBatchUpdate( ) {
+		return( bBatch );
 	}
 }

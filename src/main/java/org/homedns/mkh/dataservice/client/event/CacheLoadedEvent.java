@@ -44,7 +44,7 @@ public class CacheLoadedEvent extends GenericEvent< CacheLoadedEvent.CacheLoaded
 	 *            the event source - identification object
 	 */
 	public static void fire( Id id ) {
-		fire( new CacheLoadedEvent( ), id.hashCode( ) );
+		fire( new CacheLoadedEvent( ), id.getUID( ) );
 	}
 
 	/**

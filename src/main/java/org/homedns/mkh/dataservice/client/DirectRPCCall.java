@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2016 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  *
- * $Id: RPCCall.java 6 2013-09-09 07:17:19Z khomisha $
+ * $Id$
  */
 
 package org.homedns.mkh.dataservice.client;
@@ -23,39 +23,58 @@ import java.util.logging.Logger;
 import org.homedns.mkh.dataservice.client.event.MaskEvent;
 import org.homedns.mkh.dataservice.client.event.RPCResponseEvent;
 import org.homedns.mkh.dataservice.client.event.UnmaskEvent;
-import org.homedns.mkh.dataservice.client.presenter.Presenter;
-import org.homedns.mkh.dataservice.shared.GenericResponse;
-import org.homedns.mkh.dataservice.shared.LoginResponse;
-import org.homedns.mkh.dataservice.shared.LogoutResponse;
+import org.homedns.mkh.dataservice.shared.ReportResponse;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
+import org.homedns.mkh.dataservice.shared.StoredProcResponse;
 import org.homedns.mkh.dataservice.shared.Util;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * RPC call
+ * Direct (without presenter object) RPC call
  *
  */
-public class RPCCall {
-	private static final Logger LOG = Logger.getLogger( RPCCall.class.getName( ) );  
+public class DirectRPCCall {
+	private static final Logger LOG = Logger.getLogger( DirectRPCCall.class.getName( ) ); 
+	
+	private Request request;
 	
 	/**
 	 * Executes RPC call
 	 * 
-	 * @param presenter
-	 *            the presenter which submit call
+	 * @param request
+	 *            the request to submit
 	 */
-	public void execute( final Presenter presenter ) {
-        log( presenter.getRequest( ) );
+	public void execute( Request request ) {
+		setRequest( request );
+        log( );
 		MaskEvent.fire( );
 		AbstractEntryPoint.getDataService( ).doRPC( 
-			presenter.getRequest( ), 
-			new RPCCallBack( presenter )
+			request, 
+			new RPCCallBack( )
 		);		
 	}
 	
-	private void log( Request request ) {
+	/**
+	 * Returns request
+	 * 
+	 * @return the request
+	 */
+	public Request getRequest( ) {
+		return( request );
+	}
+
+	/**
+	 * Sets request
+	 * 
+	 * @param request the request to set
+	 */
+	public void setRequest( Request request ) {
+		this.request = request;
+	}
+
+	protected void log( ) {
 		if( request.getID( ) != null ) {
 			LOG.config( getClass( ).getName( ) + ": execute: " + request.getID( ).toString( ) );
 		}
@@ -66,28 +85,15 @@ public class RPCCall {
 	 * AsyncCallback implementation {@link com.google.gwt.user.client.rpc.AsyncCallback}
 	 */
 	public class RPCCallBack implements AsyncCallback< Response > {
-		private Presenter presenter;
 		
-		/**
-		 * @param presenter
-		 *            the presenter which submit call
-		 */
-		public RPCCallBack( Presenter presenter ) {
-			this.presenter = presenter;
+		public RPCCallBack( ) {
 		}
 		
 		/**
 		 * {@link com.google.gwt.user.client.rpc.AsyncCallback#onFailure(Throwable)}
 		 */
 		public void onFailure( Throwable caught ) {
-			presenter.setRegisterLock( false );
 			UnmaskEvent.fire( );
-			Response response = new GenericResponse( );
-			response.setResult( Response.FAILURE );
-			response.setError( Util.getCauseMsg( caught ) );
-			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
-				RPCResponseEvent.fire( presenter.getID( ), response );
-			}
 			Util.signalMsg( caught, Util.MSG_BOX, getMsg( null ) );
 		}
 		
@@ -95,16 +101,29 @@ public class RPCCall {
 		 * {@link com.google.gwt.user.client.rpc.AsyncCallback#onSuccess(Object)}
 		 */
 		public void onSuccess( Response response ) {
-			presenter.setRegisterLock( false );
 			UnmaskEvent.fire( );
-			if( response.getResult( ) == Response.FAILURE ) {
+			if( isFailure( response ) ) {
 				Util.signalMsg( null, Util.MSG_BOX, getMsg( response ) );
 			} else {
-				presenter.onResponse( response );
+				if( 
+					response instanceof ReportResponse || 
+					response instanceof StoredProcResponse
+				) {
+					RPCResponseEvent.fire( response.getID( ), response );
+				}			
 			}
-			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
-				RPCResponseEvent.fire( presenter.getID( ), response );
-			}
+		}
+		
+		/**
+		 * Returns true if data service method returns FAILURE and false otherwise
+		 * 
+		 * @param response
+		 *            the RPC call method response object
+		 * 
+		 * @return true or false
+		 */
+		protected boolean isFailure( Response response ) {
+			return(	response.getResult( ) == Response.FAILURE );
 		}
 		
 		/**
@@ -114,8 +133,8 @@ public class RPCCall {
 		 * 
 		 * @return the error message
 		 */
-		private String getMsg( Response response ) {
-			String sHandlerClassName = presenter.getRequest( ).getHandlerClassName( );
+		protected String getMsg( Response response ) {
+			String sHandlerClassName = request.getHandlerClassName( );
 			return( response == null ? sHandlerClassName : sHandlerClassName + ": " + response.getError( ) );
 		}
 	}

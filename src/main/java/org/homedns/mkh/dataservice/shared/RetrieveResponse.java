@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2015 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,14 @@
 
 package org.homedns.mkh.dataservice.shared;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
- * Return value list
+ * Retrieve response
  *
  */
-public class ReturnValue extends ArrayList< String > implements Serializable {
-	private static final long serialVersionUID = -9220759363261484558L;
+public class RetrieveResponse extends GenericResponse {
+	private static final long serialVersionUID = 4290046176611769303L;
+
+	public RetrieveResponse( ) {
+	}
 }

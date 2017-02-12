@@ -56,6 +56,8 @@ public class BaseRequestCreator implements RequestCreator {
 			request = new RetrieveRequest( );
 		} else if( type == UpdateRequest.class ) {
 			request = new UpdateRequest( );
+		}else if( type == StoredProcRequest.class ) {
+			request = new StoredProcRequest( );
 		}
 		return( request );
 	}

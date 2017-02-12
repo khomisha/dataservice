@@ -19,6 +19,7 @@
 package org.homedns.mkh.dataservice.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
 import org.apache.log4j.Logger;
 import org.homedns.mkh.dataservice.client.DataService;
 import org.homedns.mkh.dataservice.server.handler.RequestHandler;
@@ -27,14 +28,13 @@ import org.homedns.mkh.dataservice.shared.GenericResponse;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.Util;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.security.auth.login.LoginContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -44,14 +44,18 @@ import javax.servlet.http.HttpSession;
 public class DataServiceImpl extends RemoteServiceServlet implements DataService {
 	private static final Logger LOG = Logger.getLogger( DataServiceImpl.class );
 	
-	private Properties _properties;
-	private Map< Class< ? >, RequestHandler > _handlers = new HashMap< Class< ? >, RequestHandler >( );
-	private String _sSrvResourcePath;
+	private Properties properties;
+	private ConcurrentHashMap< Class< ? >, RequestHandler > handlers = (
+		new ConcurrentHashMap< Class< ? >, RequestHandler >( )
+	);
+	private String sSrvResourcePath;
+	private String sRealContextPath;
 	
 	public DataServiceImpl( ) {
 		try {
 			Context.setInstance( this );
 	   		Locale.setDefault( new Locale( "en" ) );
+	   		logInfo( );
 		}
 		catch( Exception e ) {
 			LOG.error( e.getMessage( ) );
@@ -100,10 +104,10 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	protected RequestHandler bindHandler( 
 		Request request 
 	) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-		RequestHandler handler = _handlers.get( request.getClass( ) );
+		RequestHandler handler = handlers.get( request.getClass( ) );
 		if( handler == null ) {
 			handler = RequestHandlerBuilder.build( request );
-			_handlers.put( request.getClass( ), handler );
+			handlers.put( request.getClass( ), handler );
 		}
 		return( handler );
 	}
@@ -117,6 +121,15 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 		return( getThreadLocalRequest( ) );
 	}
 	
+	/**
+	* Returns http servlet response.
+	*
+	* @return the http servlet response
+	*/
+	public HttpServletResponse getHttpServletResponse( ) {
+		return( getThreadLocalResponse( ) );
+	}
+
 	/**
 	 * Returns current session login context
 	 * 
@@ -161,7 +174,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @return the data service properties
 	 */
 	public Properties getProperties( ) {
-		return( _properties );
+		return( properties );
 	}
 
 	/**
@@ -170,12 +183,12 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @return the server resource path
 	 */
 	public String getSrvResourcePath( ) {
-		if( _sSrvResourcePath == null || "".equals( _sSrvResourcePath ) ) {
+		if( sSrvResourcePath == null || "".equals( sSrvResourcePath ) ) {
 			throw new IllegalArgumentException( 
 				Context.getBundle( getDataBufferManager( ).getLocale( ) ).getString( "noResourcePath" ) 
 			);			
 		}
-		return( _sSrvResourcePath );
+		return( sSrvResourcePath );
 	}
 
 	/**
@@ -185,7 +198,26 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 *            the server resource path to set
 	 */
 	public void setSrvResourcePath( String sSrvResourcePath ) {
-		_sSrvResourcePath = sSrvResourcePath;
+		this.sSrvResourcePath = sSrvResourcePath;
+	}
+
+	/**
+	 * Returns servlet context real path
+	 * 
+	 * @return the servlet context real path
+	 */
+	public String getRealContextPath( ) {
+		return sRealContextPath;
+	}
+
+	/**
+	 * Sets servlet context real path
+	 * 
+	 * @param sRealContextPath
+	 *            the servlet context real path to set
+	 */
+	public void setRealContextPath( String sRealContextPath ) {
+		this.sRealContextPath = sRealContextPath;
 	}
 
 	/**
@@ -197,11 +229,12 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @return the data buffer description filename
 	 */
 	public String getDataBufferFilename( String sDataBufferName ) {
-		String sFileName = getSrvResourcePath( ) + sDataBufferName + ".dbuf";
-		if( sFileName == null || "".equals( sFileName ) ) {
-			throw new IllegalArgumentException( sDataBufferName );
+		if( sDataBufferName == null || "".equals( sDataBufferName ) ) {
+			throw new IllegalArgumentException( 
+				Context.getBundle( getDataBufferManager( ).getLocale( ) ).getString( "noDataBufferName" ) 
+			);
 		}
-		return( sFileName );
+		return( getSrvResourcePath( ) + sDataBufferName + ".dbuf" );
 	}
 	
 	/**
@@ -267,7 +300,13 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @throws IOException
 	 */
 	protected void loadProperties( String sPropertyFilename ) throws IOException {
-		_properties = new Properties( );
-		_properties.load( new FileInputStream( sPropertyFilename ) );
+		Parameters params = new Parameters( sPropertyFilename );
+		properties = params.getParameters( );
+	}
+	
+	/**
+	 * Logs application information
+	 */
+	protected void logInfo( ) {
 	}
 }

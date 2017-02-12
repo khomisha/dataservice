@@ -46,6 +46,7 @@ public class ChangePasswordHandler extends GenericRequestHandler {
 		db.save( 
 			DataBuffer.UPDATE, 
 			DataBuffer.SERIALIZABLE_ARRAY, 
+			changeRequest.isBatchUpdate( ), 
 			new Serializable[][] { row }
 		);
 		Response response = createResponse( request );

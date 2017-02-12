@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2016 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,13 +18,48 @@
 
 package org.homedns.mkh.dataservice.shared;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-
 /**
- * Return value list
+ * Name value pair
  *
  */
-public class ReturnValue extends ArrayList< String > implements Serializable {
-	private static final long serialVersionUID = -9220759363261484558L;
+public class Pair< T, V > {
+	private T name;
+	private V value;
+
+	/**
+	 * @param name the name
+	 * @param value the value
+	 */
+	public Pair( T name, V value ) {
+		setName( name );
+		setValue( value );
+	}
+
+	/**
+	 * @return the name
+	 */
+	public T getName( ) {
+		return name;
+	}
+
+	/**
+	 * @return the value
+	 */
+	public V getValue( ) {
+		return value;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName( T name ) {
+		this.name = name;
+	}
+
+	/**
+	 * @param value the value to set
+	 */
+	public void setValue( V value ) {
+		this.value = value;
+	}
 }

@@ -106,7 +106,7 @@ public class DataBufferManager implements Environment {
 		}
 		return( db );
 	}
-
+	
 	/**
 	 * Returns report data buffer
 	 * 
@@ -223,14 +223,12 @@ public class DataBufferManager implements Environment {
 	}
 
 	/**
-	 * Removes specified data buffer
+	 * Closes specified data buffer and removes it from data buffer manager registry
 	 * 
 	 * @param id
 	 *            the data buffer identifier
-	 *            
-	 * @throws SQLException 
 	 */
-	public void remove( Id id ) throws SQLException {
+	public void closeDataBuffer( Id id ) {
 		String sDataBufferName = getLocaleDBName( id.getName( ) );
 		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
 		if( dbMap != null ) {

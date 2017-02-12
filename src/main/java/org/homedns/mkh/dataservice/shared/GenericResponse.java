@@ -46,6 +46,7 @@ public class GenericResponse implements Response {
 
 	public GenericResponse( ) {
 		setServerPaging( false );
+		setRowCount( 0 );
 	}
 
 	/**

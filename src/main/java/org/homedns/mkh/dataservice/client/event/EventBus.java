@@ -29,7 +29,7 @@ import com.google.web.bindery.event.shared.Event;
  *
  */
 public class EventBus extends BaseEventBus {
-	private List< Integer > _sourceIds = new ArrayList< Integer >( );
+	private List< Object > _sourceIds = new ArrayList< Object >( );
 	private static EventBus _instance = new EventBus( );
 
 	private EventBus( ) { }
@@ -50,7 +50,7 @@ public class EventBus extends BaseEventBus {
 	public void fireEventFromSource( Event< ? > event, Object source ) {
 		if( event.getAssociatedType( ) == RegisterViewEvent.TYPE ) {
 			if( !_sourceIds.contains( source ) ) {
-				_sourceIds.add( ( Integer )source );
+				_sourceIds.add( source );
 				RegisterViewEvent registerEvent = ( RegisterViewEvent )event;
 				DataPresenter p = ( DataPresenter )PresenterFactory.create( 
 					DataPresenter.class, 

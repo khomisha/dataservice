@@ -29,6 +29,20 @@ import com.google.gwt.user.client.Command;
  *
  */
 public interface View {
+	
+	/**
+	 * Sets batch update flag
+	 * 
+	 * @param bBatch the batch update flag to set
+	 */
+	public void setBatchUpdate( boolean bBatch );
+	
+	/**
+	 * Returns true if batch update and false if otherwise
+	 * 
+	 * @return batch update flag
+	 */
+	public boolean isBatchUpdate( );
 		
 	/**
 	 * Returns view data cache
@@ -92,12 +106,12 @@ public interface View {
 	public Request onInit( );
 	
 	/**
-	 * Refreshes view
+	 * Invokes view action on server response
 	 * 
 	 * @param data
-	 *            the to refresh
+	 *            the data from server
 	 */
-	public void refresh( Response data );
+	public void onResponse( Response data );
 
 	/**
 	 * Sets view data cache
@@ -152,4 +166,28 @@ public interface View {
 	 *            the command to set
 	 */
 	public void setAfterInitCommand( Command cmd );
+	
+	/**
+	 * Refreshes view
+	 */
+	public void refresh( );
+	
+	/**
+	 * Returns server response 
+	 * 
+	 * @return the response
+	 */
+	public Response getResponse( );
+
+	/**
+	 * Sets server response
+	 * 
+	 * @param response the response to set
+	 */
+	public void setResponse( Response response );
+	
+	/**
+	 * Reloads view
+	 */
+	public void reload( );
 }

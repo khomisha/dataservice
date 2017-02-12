@@ -27,10 +27,19 @@ import java.io.Serializable;
 public class Id implements Serializable {
 	private static final long serialVersionUID = 2891922995772739580L;
 
-	private String _sName;
-	private Long _lUID = Util.getUID( );
+	private String sName;
+	private Long lUID;
 
 	public Id( ) { 
+		lUID = Util.getUID( );
+	}
+
+	/**
+	 * @param sName the name
+	 */
+	public Id( String sName ) { 
+		this( );
+		setName( sName );
 	}
 
 	/**
@@ -39,7 +48,7 @@ public class Id implements Serializable {
 	 * @return the name
 	 */
 	public String getName( ) {
-		return( _sName );
+		return( sName );
 	}
 
 	/**
@@ -49,40 +58,14 @@ public class Id implements Serializable {
 	 *            the name to set
 	 */
 	public void setName( String sName ) {
-		_sName = sName;
-	}
-
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode( ) {
-		return( _sName.hashCode( ) + _lUID.hashCode( ) );
-	}
-	
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals( Object otherObj ) {
-		if( this == otherObj ) {
-			return( true );
-		}
-		if( otherObj == null ) {
-			return( false );
-		}
-		if( getClass( ) != otherObj.getClass( ) ) {
-			return( false );
-		}
-		Id other = ( Id )otherObj;
-		return( _sName.equals( other._sName ) && _lUID.equals( other._lUID ) );
+		this.sName = sName;
 	}
 
 	/**
 	 * @return the unique number id
 	 */
 	public Long getUID( ) {
-		return _lUID;
+		return lUID;
 	}
 
 	/**
@@ -90,7 +73,51 @@ public class Id implements Serializable {
 	 */
 	@Override
 	public String toString( ) {
-		String s = ( _sName == null ) ? "null" : _sName;
-		return( s + "-" + String.valueOf( _lUID ) );
+		String s = ( sName == null ) ? "null" : sName;
+		return( s + "-" + String.valueOf( lUID ) );
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode( ) {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( lUID == null ) ? 0 : lUID.hashCode( ) );
+		result = prime * result + ( ( sName == null ) ? 0 : sName.hashCode( ) );
+		return( result );
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals( Object obj ) {
+		if( this == obj ) {
+			return( true );
+		}
+		if( obj == null ) {
+			return( false );
+		}
+		if( getClass( ) != obj.getClass( ) ) {
+			return( false );
+		}
+		Id other = ( Id )obj;
+		if( lUID == null ) {
+			if( other.lUID != null ) {
+				return( false );
+			}
+		} else if( !lUID.equals( other.lUID ) ) {
+			return( false );
+		}
+		if( sName == null ) {
+			if( other.sName != null ) {
+				return( false );
+			}
+		} else if( !sName.equals( other.sName ) ) {
+			return( false );
+		}
+		return( true );
 	}
 }

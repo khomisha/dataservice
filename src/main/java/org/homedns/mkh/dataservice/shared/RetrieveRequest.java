@@ -32,7 +32,7 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 	
 	public RetrieveRequest( ) { 
 		setHandlerClassName( "org.homedns.mkh.dataservice.server.handler.RetrieveHandler" );
-		setResponseClassName( "org.homedns.mkh.dataservice.shared.GenericResponse" );
+		setResponseClassName( "org.homedns.mkh.dataservice.shared.RetrieveResponse" );
 	}
 
 	/**

@@ -47,7 +47,7 @@ public class RPCallEvent extends GenericEvent< RPCallEvent.RPCallHandler > {
 	public static void fire( Request request ) {
 		RPCallEvent event = new RPCallEvent( );
 		event.setRequest( request );
-		fire( event, request.getID( ).hashCode( ) );
+		fire( event, request.getID( ).getUID( ) );		//??? if getID() == null
 	}
 
 	/**

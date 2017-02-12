@@ -28,6 +28,7 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -35,10 +36,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.homedns.mkh.databuffer.Column;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
 import org.homedns.mkh.databuffer.Type;
+import org.homedns.mkh.dataservice.server.Context;
+
 import jxl.write.DateTime;
 import jxl.write.Number;
 
@@ -48,8 +53,10 @@ import jxl.write.Number;
  * 
  */
 public class Excel {
-	private String _sTemplate;
-	private DataBuffer _db;
+	private static final Logger LOG = Logger.getLogger( Excel.class );
+
+	private String sTemplate;
+	private DataBuffer db;
 	
 	/**
 	 * Excel constructor.
@@ -60,8 +67,8 @@ public class Excel {
 	 *            data buffer
 	 */
 	public Excel( String sTemplate, DataBuffer db ) {
-		_sTemplate = sTemplate;
-		_db = db;
+		this.sTemplate = sTemplate;
+		this.db = db;
 	}
 	
 	/**
@@ -101,21 +108,25 @@ public class Excel {
 		BiffException, RowsExceededException, 
 		SQLException, ParseException, InvalidDatabufferDesc 
 	{
-		String sReport = _sTemplate.substring( _sTemplate.lastIndexOf( "/" ) ); 
-		sReport = System.getProperty( "user.dir" ) + "/reports/" + sReport.replaceFirst( 
+		String sReport = sTemplate.substring( sTemplate.lastIndexOf( "/" ) ); 
+		sReport = Context.getInstance( ).getRealContextPath( ) + "reports" + sReport.replaceFirst( 
 			"template.xls", String.valueOf( ( new Date( ) ).getTime( ) ) + ".xls" 
 		);
+		LOG.debug( "report filename: " + sReport );
+		LOG.debug( "template filename: " + sTemplate );
 		WritableWorkbook workBook = null;
 		try {
+			File report = new File( sReport );
+			File template = new File( sTemplate );
 			workBook = Workbook.createWorkbook( 
-				new File( sReport ), 
-				Workbook.getWorkbook( new File( _sTemplate ) ) 
+				report, 
+				Workbook.getWorkbook( template ) 
 			);
 			WritableSheet sheet = workBook.getSheet( 0 );
 			
 			List< Column > listCol = new ArrayList< Column >( );
 			String sReportParam;
-			for( Column col : _db.getDescription( ).getColumns( ) ) {
+			for( Column col : db.getDescription( ).getColumns( ) ) {
 				sReportParam = col.getReportParam( );
 				if( "".equals( sReportParam ) || sReportParam == null ) {
 					if( !"".equals( col.getStyle( ) ) ) {
@@ -125,7 +136,7 @@ public class Excel {
 					insertParam( sheet, sReportParam, col );
 				}
 			}
-			String sReportData = _db.getDescription( ).getTable( ).getReportData( );
+			String sReportData = db.getDescription( ).getTable( ).getReportData( );
 			insertData( sheet, sReportData, listCol );
 			workBook.write( );
 		}
@@ -157,7 +168,7 @@ public class Excel {
 		String sReportData, 
 		List< Column > listCol 
 	) throws RowsExceededException, WriteException, SQLException, ParseException {
-		String[][] asData = _db.getData( listCol );
+		String[][] asData = db.getData( listCol );
 		int[] aiColRow = getCellIndex( sReportData );
 		int iSheetRow = aiColRow[ 1 ];
 		for( int iRow = 0; iRow < asData.length; iRow++ ) {
@@ -193,17 +204,17 @@ public class Excel {
 	) throws RowsExceededException, WriteException, SQLException, InvalidDatabufferDesc {
 		int[] aiColRow = getCellIndex( sReportParam );
 	    int iColNum = col.getColNum( );
-		_db.beforeFirst( );
-		if( _db.next( ) ) {
+		db.beforeFirst( );
+		if( db.next( ) ) {
 		    WritableCell cell = sheet.getWritableCell( aiColRow[ 0 ], aiColRow[ 1 ] );
 		    if( cell.getType( ) == CellType.LABEL ) {
-		    	( ( Label )cell ).setString( _db.getString( iColNum + 1 ) );
+		    	( ( Label )cell ).setString( db.getString( iColNum + 1 ) );
 		    } else if( cell.getType( ) == CellType.BOOLEAN ) {
-		    	( ( jxl.write.Boolean )cell ).setValue( _db.getBoolean( iColNum + 1 ) );
+		    	( ( jxl.write.Boolean )cell ).setValue( db.getBoolean( iColNum + 1 ) );
 		    } else if( cell.getType( ) == CellType.DATE ) {
-		    	( ( DateTime )cell ).setDate( _db.getDate( iColNum + 1 ) );
+		    	( ( DateTime )cell ).setDate( db.getDate( iColNum + 1 ) );
 		    } else if( cell.getType( ) == CellType.NUMBER ) {
-		    	( ( Number )cell ).setValue( _db.getDouble( iColNum + 1 ) );
+		    	( ( Number )cell ).setValue( db.getDouble( iColNum + 1 ) );
 		    } else if( cell.getType( ) == CellType.EMPTY ) {
 		    	CellFormat fmt = cell.getCellFormat( );
 		    	Type type = col.getType( );
@@ -212,7 +223,7 @@ public class Excel {
 						new Label( 
 							aiColRow[ 0 ], 
 							aiColRow[ 1 ], 
-							_db.getString( iColNum + 1 ), 
+							db.getString( iColNum + 1 ), 
 							fmt 
 						) 
 					);
@@ -228,7 +239,7 @@ public class Excel {
 						new Number( 
 							aiColRow[ 0 ], 
 							aiColRow[ 1 ], 
-							_db.getDouble( iColNum + 1 ), 
+							db.getDouble( iColNum + 1 ), 
 							fmt 
 						) 
 					);
@@ -237,7 +248,7 @@ public class Excel {
 						new jxl.write.Boolean( 
 							aiColRow[ 0 ], 
 							aiColRow[ 1 ], 
-							_db.getBoolean( iColNum + 1 ), fmt 
+							db.getBoolean( iColNum + 1 ), fmt 
 						) 
 					);
 				} else if( type == Type.TIMESTAMP ) {
@@ -245,7 +256,7 @@ public class Excel {
 						new DateTime( 
 							aiColRow[ 0 ], 
 							aiColRow[ 1 ], 
-							_db.getDate( iColNum + 1 ), 
+							db.getDate( iColNum + 1 ), 
 							fmt 
 						) 
 					);
@@ -255,7 +266,7 @@ public class Excel {
 		    		new Label( 
 		    			aiColRow[ 0 ], 
 		    			aiColRow[ 1 ], 
-		    			_db.getString( iColNum + 1 ) 
+		    			db.getString( iColNum + 1 ) 
 		    		) 
 		    	);
 		    }

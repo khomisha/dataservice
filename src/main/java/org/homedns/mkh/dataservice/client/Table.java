@@ -35,7 +35,7 @@ public class Table {
 	private String rowCountColumn;
 	private String[] argType;
 	private String reportData;
-	private int pageSize;
+	private int pageSize = 0;
 
 	public Table( ) {
 	}

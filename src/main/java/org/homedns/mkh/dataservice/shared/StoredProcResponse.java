@@ -18,13 +18,13 @@
 
 package org.homedns.mkh.dataservice.shared;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-
 /**
- * Return value list
+ * Stored procedure RPC response
  *
  */
-public class ReturnValue extends ArrayList< String > implements Serializable {
-	private static final long serialVersionUID = -9220759363261484558L;
+public class StoredProcResponse extends GenericResponse {
+	private static final long serialVersionUID = -7162615138333258019L;
+
+	public StoredProcResponse( ) {
+	}
 }

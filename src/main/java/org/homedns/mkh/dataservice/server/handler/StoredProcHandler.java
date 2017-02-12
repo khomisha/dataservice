@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2016 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,36 +21,31 @@ package org.homedns.mkh.dataservice.server.handler;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
-import org.homedns.mkh.dataservice.shared.ReturnValue;
-import org.homedns.mkh.dataservice.shared.UpdateRequest;
+import org.homedns.mkh.dataservice.shared.StoredProcRequest;
+import org.homedns.mkh.dataservice.shared.StoredProcResponse;
 
 /**
- * Update request handler
+ * Stored procedure request handler
  *
  */
-public class UpdateHandler extends GenericRequestHandler {
-
-	public UpdateHandler( ) { }
+public class StoredProcHandler extends GenericRequestHandler {
 
 	/**
 	 * @see org.homedns.mkh.dataservice.server.handler.RequestHandler#execute(org.homedns.mkh.dataservice.shared.Request)
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
-		UpdateRequest updateRequest = ( UpdateRequest )request;
-		DataBuffer db = getDataBuffer( updateRequest );
-		db.save( 
-			DataBuffer.UPDATE, 
-			DataBuffer.JSON, 
-			updateRequest.isBatchUpdate( ), 
-			updateRequest.getData( ) 
-		);
-		Response response = createResponse( request );
-		ReturnValue rv = new ReturnValue( );
-		rv.addAll( db.getReturnValue( ) );
-		response.setPKValue( rv );		
-		response.setRowCount( db.getRowCount( ) );
-		response.setJsonData( db.getJson( ) );
+		StoredProcResponse response = ( StoredProcResponse )createResponse( request );
+		response.setID( request.getID( ) );
+		StoredProcRequest req = ( StoredProcRequest )request;
+		DataBuffer db = getDataBuffer( req );
+		db.insertData( req.getData( ) );
+		if( req.isBatchUpdate( ) ) {
+			db.saveBatch( DataBuffer.INSERT );			
+		} else {
+			db.save( DataBuffer.INSERT );
+		}
+		closeDataBuffer( request );
 		response.setResult( Response.SAVE_SUCCESS );
 		return( response );
 	}

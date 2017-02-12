@@ -47,7 +47,7 @@ public class RemoveViewEvent extends GenericEvent< RemoveViewEvent.RemoveWidgetH
 	public static void fire( View view ) {
 		RemoveViewEvent event = new RemoveViewEvent( );
 		event.setView( view );
-		fire( event, view.getID( ).hashCode( ) );
+		fire( event, view.getID( ).getUID( ) );
 	}
 
 	/**

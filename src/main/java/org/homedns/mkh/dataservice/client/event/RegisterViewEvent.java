@@ -46,7 +46,7 @@ public class RegisterViewEvent extends GenericEvent< RegisterViewEvent.RegisterV
 	public static void fire( View view ) {
 		RegisterViewEvent event = new RegisterViewEvent( );
 		event.setView( view );
-		fire( event, view.getID( ).hashCode( ) );
+		fire( event, view.getID( ).getUID( ) );
 	}
 
 	/**

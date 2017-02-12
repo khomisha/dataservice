@@ -27,12 +27,13 @@ import java.io.Serializable;
 public class ReportRequest extends GenericRequest implements Serializable {
 	private static final long serialVersionUID = 9119393937083854807L;
 
-	private Data _args;
-	private String _sDataBufferName;
+	private Data args;
+	private String sDataBufferName;
 
 	public ReportRequest( ) {
 		setHandlerClassName( "org.homedns.mkh.dataservice.server.handler.ReportHandler" );
 		setResponseClassName( "org.homedns.mkh.dataservice.shared.ReportResponse" );
+		setInitPresenter( false );
 	}
 
 	/**
@@ -45,8 +46,8 @@ public class ReportRequest extends GenericRequest implements Serializable {
 			throw new IllegalArgumentException( inputRequest.getClass( ).getName( ) );
 		}
 		ReportRequest request = ( ReportRequest )r;
-		request.setArgs( _args );
-		request.setDataBufferName( _sDataBufferName );
+		request.setArgs( args );
+		request.setDataBufferName( sDataBufferName );
 		return( request );
 	}
 
@@ -56,7 +57,7 @@ public class ReportRequest extends GenericRequest implements Serializable {
 	 * @return the retrieval arguments
 	 */
 	public Data getArgs( ) {
-		return( _args );
+		return( args );
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class ReportRequest extends GenericRequest implements Serializable {
 	 * @return the data buffer name
 	 */
 	public String getDataBufferName( ) {
-		return( _sDataBufferName );
+		return( sDataBufferName );
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class ReportRequest extends GenericRequest implements Serializable {
 	 *            the retrieval arguments to set
 	 */
 	public void setArgs( Data args ) {
-		_args = args;
+		this.args = args;
 	}
 
 	/**
@@ -85,6 +86,6 @@ public class ReportRequest extends GenericRequest implements Serializable {
 	 *            the data buffer name to set
 	 */
 	public void setDataBufferName( String sDataBufferName ) {
-		_sDataBufferName = sDataBufferName;
+		this.sDataBufferName = sDataBufferName;
 	}
 }
