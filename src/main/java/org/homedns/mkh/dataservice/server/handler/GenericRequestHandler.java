@@ -85,6 +85,10 @@ public abstract class GenericRequestHandler implements RequestHandler {
 		Request request 
 	) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		Class< ? > clazz = Class.forName( request.getResponseClassName( ) );
-		return( ( Response )clazz.newInstance( ) );
+		Response response = ( Response )clazz.newInstance( );
+		if( request.getID( ) != null ) {
+			response.setID( request.getID( ) );
+		}
+		return( response );
 	}
 }

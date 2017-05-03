@@ -57,7 +57,7 @@ public class ReportHandler extends GenericRequestHandler {
 			iResult = db.retrieve( args );
 		}
 		Response response = createResponse( request );
-		response.setID( request.getID( ) );
+//		response.setID( request.getID( ) );
 		String sFile = db.getEnvironment( ).getDataBufferFilename( db.getDataBufferName( ) );
 		String sTemplate = sFile.replaceFirst( ".dbuf", "_template.xls" );
 		Excel excel = new Excel( sTemplate, db );

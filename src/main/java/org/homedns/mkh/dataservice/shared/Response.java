@@ -92,17 +92,9 @@ public interface Response extends Serializable {
 	/**
 	 * Returns primary key value
 	 * 
-	 * @return the primary key value
+	 * @return the primary key value or null
 	 */
-	public ReturnValue getPKValue( );
-
-	/**
-	 * Sets primary key value
-	 * 
-	 * @param pkValue
-	 *            the primary key value to set
-	 */
-	public void setPKValue( ReturnValue pkValue );
+	public String getPKValue( );
 
 	/**
 	 * Returns error message
@@ -179,17 +171,31 @@ public interface Response extends Serializable {
 	public void setServerPaging( Boolean bServerPaging );
 
 	/**
-	 * Returns report downloading file name
+	 * Returns downloading file name
 	 * 
-	 * @return the report downloading file name
+	 * @return the downloading file name
 	 */
 	public String getDownloadFileName( );
 	
 	/**
-	 * Sets report downloading file name
+	 * Sets downloading file name
 	 * 
 	 * @param sFile
-	 *            the report downloading file name to set
+	 *            the downloading file name to set
 	 */
 	public void setDownloadFileName( String sFile );
+
+	/**
+	 * Returns dbms message
+	 * 
+	 * @return the message or null
+	 */
+	public String getMsg( );
+
+	/**
+	 * Sets return value
+	 * 
+	 * @param rv the return value to set
+	 */
+	public void setReturnValue( ReturnValue rv );
 }

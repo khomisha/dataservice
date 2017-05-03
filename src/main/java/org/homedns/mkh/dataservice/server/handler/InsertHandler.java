@@ -49,7 +49,7 @@ public class InsertHandler extends GenericRequestHandler {
 		Response response = createResponse( request );
 		ReturnValue rv = new ReturnValue( );
 		rv.addAll( db.getReturnValue( ) );
-		response.setPKValue( rv );		
+		response.setReturnValue( rv );		
 		response.setRowCount( db.getRowCount( ) );
 		response.setJsonData( db.getJson( ) );
 		response.setResult( Response.SAVE_SUCCESS );

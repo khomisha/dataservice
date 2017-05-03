@@ -94,7 +94,7 @@ public class DirectRPCCall {
 		 */
 		public void onFailure( Throwable caught ) {
 			UnmaskEvent.fire( );
-			Util.signalMsg( caught, Util.MSG_BOX, getMsg( null ) );
+			Util.signalMsg( caught, Util.MSG_BOX, getErrMsg( null ) );
 		}
 		
 		/**
@@ -103,12 +103,15 @@ public class DirectRPCCall {
 		public void onSuccess( Response response ) {
 			UnmaskEvent.fire( );
 			if( isFailure( response ) ) {
-				Util.signalMsg( null, Util.MSG_BOX, getMsg( response ) );
+				Util.signalMsg( null, Util.MSG_BOX, getErrMsg( response ) );
 			} else {
 				if( 
 					response instanceof ReportResponse || 
 					response instanceof StoredProcResponse
 				) {
+					if( response.getMsg( ) != null ) {
+						Util.signalMsg( null, Util.MSG_BOX, response.getMsg( ) );						
+					}
 					RPCResponseEvent.fire( response.getID( ), response );
 				}			
 			}
@@ -133,7 +136,7 @@ public class DirectRPCCall {
 		 * 
 		 * @return the error message
 		 */
-		protected String getMsg( Response response ) {
+		protected String getErrMsg( Response response ) {
 			String sHandlerClassName = request.getHandlerClassName( );
 			return( response == null ? sHandlerClassName : sHandlerClassName + ": " + response.getError( ) );
 		}

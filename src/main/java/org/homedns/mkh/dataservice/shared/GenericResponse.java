@@ -29,7 +29,7 @@ public class GenericResponse implements Response {
 	
 	private static final int DATA 				= 6000;
 	private static final int DATABUFFER_DESC	= 6001;
-	private static final int PK_VALUE			= 6002;
+	private static final int RETURN_VALUE		= 6002;
 	private static final int DOWNLOAD_FILENAME	= 6003;
 	private static final int PAGE_NUM			= 6005;
 	private static final int RESULT 			= 6006;
@@ -108,15 +108,13 @@ public class GenericResponse implements Response {
 	/**
 	 * @see org.homedns.mkh.dataservice.shared.Response#getPKValue()
 	 */
-	public ReturnValue getPKValue( ) {
-		return( getAttribute( ReturnValue.class, PK_VALUE ) );
-	}
-
-	/**
-	 * @see org.homedns.mkh.dataservice.shared.Response#setPKValue(org.homedns.mkh.dataservice.shared.ReturnValue)
-	 */
-	public void setPKValue( ReturnValue pkValue ) {
-		setAttribute( PK_VALUE, pkValue );
+	public String getPKValue( ) {
+		String sValue = null;
+		ReturnValue rv = getAttribute( ReturnValue.class, RETURN_VALUE );
+		if( rv != null && !rv.isEmpty( ) ) {
+			sValue = rv.get( 0 );
+		}
+		return( sValue );
 	}
 
 	/**
@@ -131,6 +129,25 @@ public class GenericResponse implements Response {
 	 */
 	public void setError( String sError ) {
 		setAttribute( ERROR_MSG, sError );
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.shared.Response#getMsg()
+	 */
+	public String getMsg( ) {
+		String sValue = null;
+		ReturnValue rv = getAttribute( ReturnValue.class, RETURN_VALUE );
+		if( rv != null && rv.size( ) > 1 ) {
+			sValue = rv.get( 1 );
+		}
+		return( sValue );
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.shared.Response#setMsg(java.lang.String)
+	 */
+	public void setReturnValue( ReturnValue rv ) {
+		setAttribute( RETURN_VALUE, rv );
 	}
 
 	/**

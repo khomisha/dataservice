@@ -21,6 +21,7 @@ package org.homedns.mkh.dataservice.server.handler;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
+import org.homedns.mkh.dataservice.shared.ReturnValue;
 import org.homedns.mkh.dataservice.shared.StoredProcRequest;
 import org.homedns.mkh.dataservice.shared.StoredProcResponse;
 
@@ -36,7 +37,7 @@ public class StoredProcHandler extends GenericRequestHandler {
 	@Override
 	public Response execute( Request request ) throws Exception {
 		StoredProcResponse response = ( StoredProcResponse )createResponse( request );
-		response.setID( request.getID( ) );
+//		response.setID( request.getID( ) );
 		StoredProcRequest req = ( StoredProcRequest )request;
 		DataBuffer db = getDataBuffer( req );
 		db.insertData( req.getData( ) );
@@ -45,6 +46,9 @@ public class StoredProcHandler extends GenericRequestHandler {
 		} else {
 			db.save( DataBuffer.INSERT );
 		}
+		ReturnValue rv = new ReturnValue( );
+		rv.addAll( db.getReturnValue( ) );
+		response.setReturnValue( rv );		
 		closeDataBuffer( request );
 		response.setResult( Response.SAVE_SUCCESS );
 		return( response );

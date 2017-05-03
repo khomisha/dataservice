@@ -86,6 +86,7 @@ public class RPCCall {
 			response.setResult( Response.FAILURE );
 			response.setError( Util.getCauseMsg( caught ) );
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
+				LOG.config( "RPCResponseEvent fire id: " + presenter.getID( ).toString( ) );
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
 			Util.signalMsg( caught, Util.MSG_BOX, getMsg( null ) );
@@ -103,6 +104,10 @@ public class RPCCall {
 				presenter.onResponse( response );
 			}
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
+				if( response.getMsg( ) != null ) {
+					Util.signalMsg( null, Util.MSG_BOX, response.getMsg( ) );						
+				}
+				LOG.config( "RPCResponseEvent fire id: " + presenter.getID( ).toString( ) );
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
 		}

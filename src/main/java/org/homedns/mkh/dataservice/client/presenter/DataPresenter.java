@@ -121,6 +121,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 			initView( view );
 		} else {
 			if( isRegisterLock( ) ) {
+				// data request is sent to server already, waiting for result
 			    Scheduler.get( ).scheduleIncremental( 
 			    	new RepeatingCommand( ) {
 			    		@Override
