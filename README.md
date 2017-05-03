@@ -36,7 +36,7 @@ Any Maven based project can use it directly by adding the appropriate entries to
   <dependency>
     <groupId>org.homedns.mkh</groupId>
     <artifactId>dataservice</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.7</version>
   </dependency>
 </dependencies>
 ```
@@ -58,7 +58,7 @@ Packaged jars can be downloaded directly from the [Releases page](https://github
 ## License
 
 Apache License, Version 2.0
-Copyright (c) 2012-2014 Mikhail Khodonov.
+Copyright (c) 2012-2017 Mikhail Khodonov.
 It is free software and may be redistributed under the terms specified
 in the LICENSE and NOTICE files.
 
