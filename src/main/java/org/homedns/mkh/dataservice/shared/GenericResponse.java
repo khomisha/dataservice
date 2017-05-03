@@ -144,7 +144,7 @@ public class GenericResponse implements Response {
 	}
 
 	/**
-	 * @see org.homedns.mkh.dataservice.shared.Response#setMsg(java.lang.String)
+	 * @see org.homedns.mkh.dataservice.shared.Response#setReturnValue(org.homedns.mkh.dataservice.shared.ReturnValue)
 	 */
 	public void setReturnValue( ReturnValue rv ) {
 		setAttribute( RETURN_VALUE, rv );
