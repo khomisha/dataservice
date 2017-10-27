@@ -18,8 +18,6 @@
 
 package org.homedns.mkh.dataservice.client;
 
-import java.util.logging.Logger;
-
 import org.homedns.mkh.dataservice.client.event.MaskEvent;
 import org.homedns.mkh.dataservice.client.event.RPCResponseEvent;
 import org.homedns.mkh.dataservice.client.event.UnmaskEvent;
@@ -37,8 +35,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * RPC call
  *
  */
-public class RPCCall {
-	private static final Logger LOG = Logger.getLogger( RPCCall.class.getName( ) );  
+public class RPCCall extends AbstractRPCCall{
 	
 	/**
 	 * Executes RPC call
@@ -47,19 +44,10 @@ public class RPCCall {
 	 *            the presenter which submit call
 	 */
 	public void execute( final Presenter presenter ) {
-        log( presenter.getRequest( ) );
+		Request request = presenter.getRequest( );
+        log( request );
 		MaskEvent.fire( );
-		AbstractEntryPoint.getDataService( ).doRPC( 
-			presenter.getRequest( ), 
-			new RPCCallBack( presenter )
-		);		
-	}
-	
-	private void log( Request request ) {
-		if( request.getID( ) != null ) {
-			LOG.config( getClass( ).getName( ) + ": execute: " + request.getID( ).toString( ) );
-		}
-		LOG.config( getClass( ).getName( ) + ": execute: " + request.getHandlerClassName( ) );		
+		AbstractEntryPoint.getDataService( ).doRPC( request, new RPCCallBack( presenter ) );		
 	}
 	
 	/**
@@ -67,6 +55,7 @@ public class RPCCall {
 	 */
 	public class RPCCallBack implements AsyncCallback< Response > {
 		private Presenter presenter;
+		private String sHandlerClassName;
 		
 		/**
 		 * @param presenter
@@ -74,6 +63,7 @@ public class RPCCall {
 		 */
 		public RPCCallBack( Presenter presenter ) {
 			this.presenter = presenter;
+			this.sHandlerClassName = presenter.getRequest( ).getHandlerClassName( );
 		}
 		
 		/**
@@ -82,14 +72,14 @@ public class RPCCall {
 		public void onFailure( Throwable caught ) {
 			presenter.setRegisterLock( false );
 			UnmaskEvent.fire( );
+			String sErr = getMsg( sHandlerClassName, caught );
 			Response response = new GenericResponse( );
 			response.setResult( Response.FAILURE );
-			response.setError( Util.getCauseMsg( caught ) );
+			response.setError( sErr );
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
-				LOG.config( "RPCResponseEvent fire id: " + presenter.getID( ).toString( ) );
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
-			Util.signalMsg( caught, Util.MSG_BOX, getMsg( null ) );
+			Util.signalMsg( caught, Util.MSG_BOX, sErr );
 		}
 		
 		/**
@@ -99,29 +89,17 @@ public class RPCCall {
 			presenter.setRegisterLock( false );
 			UnmaskEvent.fire( );
 			if( response.getResult( ) == Response.FAILURE ) {
-				Util.signalMsg( null, Util.MSG_BOX, getMsg( response ) );
+				Util.signalMsg( null, Util.MSG_BOX, getMsg( sHandlerClassName, response ) );
 			} else {
 				presenter.onResponse( response );
+				String sMsg = getMsg( null, response );
+				if( sMsg != null ) {
+					Util.signalMsg( null, Util.MSG_BOX, sMsg );						
+				}
 			}
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
-				if( response.getMsg( ) != null ) {
-					Util.signalMsg( null, Util.MSG_BOX, response.getMsg( ) );						
-				}
-				LOG.config( "RPCResponseEvent fire id: " + presenter.getID( ).toString( ) );
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
-		}
-		
-		/**
-		 * Returns error message
-		 * 
-		 * @param response the response
-		 * 
-		 * @return the error message
-		 */
-		private String getMsg( Response response ) {
-			String sHandlerClassName = presenter.getRequest( ).getHandlerClassName( );
-			return( response == null ? sHandlerClassName : sHandlerClassName + ": " + response.getError( ) );
 		}
 	}
 }

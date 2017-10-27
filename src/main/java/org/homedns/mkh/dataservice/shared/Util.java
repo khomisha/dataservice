@@ -134,9 +134,11 @@ public class Util {
 	 *            additional error information
 	 */
 	public static void signalMsg( Throwable caught, int iOutput, String sMsg ) {
-		sMsg = ( sMsg == null || "".equals( sMsg ) ) ? 
+		sMsg = ( 
+			sMsg == null || "".equals( sMsg ) ? 
 			getCauseMsg( caught ) : 
-			sMsg + ": " + getCauseMsg( caught );
+			sMsg + ": " + getCauseMsg( caught )
+		);
 		switch( iOutput ) {
 			case CONSOLE:
 				System.out.println( sMsg );
@@ -204,12 +206,12 @@ public class Util {
 	 */
 	public static Throwable unwrap( Throwable e ) {   
 		if( e instanceof UmbrellaException ) {   
-			UmbrellaException ue = (UmbrellaException) e;  
+			UmbrellaException ue = ( UmbrellaException ) e;  
 			if( ue.getCauses( ).size( ) > 1 ) {   
 				return unwrap( ue.getCauses( ).iterator( ).next( ) );  
 			}  
 		}  
-		return e;  
+		return( e );  
 	}
 
 	/**
@@ -221,7 +223,7 @@ public class Util {
 	 * @return the cause error message
 	 */
 	public static String getCauseMsg( Throwable e ) {
-		String sMsg = "";
+		String sMsg = "no detail message";
 		if( e != null ) {
 			Throwable cause = e.getCause( );
 			if( cause == null ) {

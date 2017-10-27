@@ -21,6 +21,7 @@ package org.homedns.mkh.dataservice.server;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javax.servlet.ServletException;
 import org.apache.log4j.Logger;
 import com.google.gwt.logging.server.StackTraceDeobfuscator;
 import com.google.gwt.logging.shared.RemoteLoggingService;
@@ -60,6 +61,24 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 
 	private StackTraceDeobfuscator _deobfuscator;
 	
+	/**
+	 * @see javax.servlet.GenericServlet#init()
+	 */
+	@Override
+	public void init( ) throws ServletException {
+		super.init( );
+		try {
+			String sPath = getServletContext( ).getResource( "/" ).getPath( ) + getSymbolMapPath( );
+			setDeobfuscator( new StackTraceDeobfuscator( sPath, true ) );
+			LOG.debug( "symbol maps path: " + sPath );
+		}
+		catch( Exception e ) {
+			ServletException se = new ServletException( );
+			se.initCause( e );
+			throw se;
+		}
+	}
+
 	/**
 	 * @see com.google.gwt.logging.shared.RemoteLoggingService#logOnServer(java.util.logging.LogRecord)
 	 */
@@ -109,6 +128,13 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 		_deobfuscator = deobfuscator;
 	}
 
+	/**
+	 * Returns symbol map path
+	 * 
+	 * @return the symbol map path
+	 */
+	abstract protected String getSymbolMapPath( );
+	
 	/**
 	 * Logs data
 	 * 

@@ -18,8 +18,6 @@
 
 package org.homedns.mkh.dataservice.client;
 
-import java.util.logging.Logger;
-
 import org.homedns.mkh.dataservice.client.event.MaskEvent;
 import org.homedns.mkh.dataservice.client.event.RPCResponseEvent;
 import org.homedns.mkh.dataservice.client.event.UnmaskEvent;
@@ -28,16 +26,13 @@ import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.StoredProcResponse;
 import org.homedns.mkh.dataservice.shared.Util;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * Direct (without presenter object) RPC call
  *
  */
-public class DirectRPCCall {
-	private static final Logger LOG = Logger.getLogger( DirectRPCCall.class.getName( ) ); 
-	
+public class DirectRPCCall extends AbstractRPCCall {
 	private Request request;
 	
 	/**
@@ -48,12 +43,9 @@ public class DirectRPCCall {
 	 */
 	public void execute( Request request ) {
 		setRequest( request );
-        log( );
+        log( request );
 		MaskEvent.fire( );
-		AbstractEntryPoint.getDataService( ).doRPC( 
-			request, 
-			new RPCCallBack( )
-		);		
+		AbstractEntryPoint.getDataService( ).doRPC( request, new RPCCallBack( ) );		
 	}
 	
 	/**
@@ -74,27 +66,23 @@ public class DirectRPCCall {
 		this.request = request;
 	}
 
-	protected void log( ) {
-		if( request.getID( ) != null ) {
-			LOG.config( getClass( ).getName( ) + ": execute: " + request.getID( ).toString( ) );
-		}
-		LOG.config( getClass( ).getName( ) + ": execute: " + request.getHandlerClassName( ) );		
-	}
-	
 	/**
 	 * AsyncCallback implementation {@link com.google.gwt.user.client.rpc.AsyncCallback}
 	 */
 	public class RPCCallBack implements AsyncCallback< Response > {
 		
-		public RPCCallBack( ) {
-		}
+		public RPCCallBack( ) {}
 		
 		/**
 		 * {@link com.google.gwt.user.client.rpc.AsyncCallback#onFailure(Throwable)}
 		 */
 		public void onFailure( Throwable caught ) {
 			UnmaskEvent.fire( );
-			Util.signalMsg( caught, Util.MSG_BOX, getErrMsg( null ) );
+			Util.signalMsg( 
+				caught, 
+				Util.MSG_BOX, 
+				getMsg( request.getHandlerClassName( ), caught ) 
+			);
 		}
 		
 		/**
@@ -102,43 +90,21 @@ public class DirectRPCCall {
 		 */
 		public void onSuccess( Response response ) {
 			UnmaskEvent.fire( );
-			if( isFailure( response ) ) {
-				Util.signalMsg( null, Util.MSG_BOX, getErrMsg( response ) );
+			if( response.getResult( ) == Response.FAILURE ) {
+				Util.signalMsg( 
+					null, 
+					Util.MSG_BOX, 
+					getMsg( request.getHandlerClassName( ), response ) 
+				);
 			} else {
-				if( 
-					response instanceof ReportResponse || 
-					response instanceof StoredProcResponse
-				) {
-					if( response.getMsg( ) != null ) {
-						Util.signalMsg( null, Util.MSG_BOX, response.getMsg( ) );						
+				if( response instanceof ReportResponse || response instanceof StoredProcResponse ) {
+					String sMsg = getMsg( null, response );
+					if( sMsg != null ) {
+						Util.signalMsg( null, Util.MSG_BOX, sMsg );						
 					}
 					RPCResponseEvent.fire( response.getID( ), response );
 				}			
 			}
-		}
-		
-		/**
-		 * Returns true if data service method returns FAILURE and false otherwise
-		 * 
-		 * @param response
-		 *            the RPC call method response object
-		 * 
-		 * @return true or false
-		 */
-		protected boolean isFailure( Response response ) {
-			return(	response.getResult( ) == Response.FAILURE );
-		}
-		
-		/**
-		 * Returns error message
-		 * 
-		 * @param response the response
-		 * 
-		 * @return the error message
-		 */
-		protected String getErrMsg( Response response ) {
-			String sHandlerClassName = request.getHandlerClassName( );
-			return( response == null ? sHandlerClassName : sHandlerClassName + ": " + response.getError( ) );
 		}
 	}
 }

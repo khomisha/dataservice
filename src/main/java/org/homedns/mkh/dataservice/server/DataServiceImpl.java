@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.security.auth.login.LoginContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -59,6 +60,24 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 		}
 		catch( Exception e ) {
 			LOG.error( e.getMessage( ) );
+		}
+	}
+
+	/**
+	 * @see javax.servlet.GenericServlet#init()
+	 */
+	@Override
+	public void init( ) throws ServletException {
+		super.init( );
+		try {
+			setRealContextPath( getServletContext( ).getResource( "/" ).getPath( ) );
+			setSrvResourcePath( getRealContextPath( ) + getResourcePath( ) );
+			LOG.debug( "resource path: " + getRealContextPath( ) + getResourcePath( ) );
+		}
+		catch( Exception e ) {
+			ServletException se = new ServletException( );
+			se.initCause( e );
+			throw se;
 		}
 	}
 
@@ -308,5 +327,14 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * Logs application information
 	 */
 	protected void logInfo( ) {
+	}
+
+	/**
+	 * Returns server's resource path, must override in descendant
+	 * 
+	 * @return server's resource path
+	 */
+	protected String getResourcePath( ) {
+		return( null );
 	}
 }
