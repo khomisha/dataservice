@@ -134,10 +134,11 @@ public class Util {
 	 *            additional error information
 	 */
 	public static void signalMsg( Throwable caught, int iOutput, String sMsg ) {
+		String sCauseMsg = getCauseMsg( caught );
 		sMsg = ( 
-			sMsg == null || "".equals( sMsg ) ? 
-			getCauseMsg( caught ) : 
-			sMsg + ": " + getCauseMsg( caught )
+			sMsg == null ? 
+			"".equals( sCauseMsg ) ? "no detail message" : sCauseMsg : 
+			sMsg + ". " + sCauseMsg
 		);
 		switch( iOutput ) {
 			case CONSOLE:
@@ -223,7 +224,7 @@ public class Util {
 	 * @return the cause error message
 	 */
 	public static String getCauseMsg( Throwable e ) {
-		String sMsg = "no detail message";
+		String sMsg = "";
 		if( e != null ) {
 			Throwable cause = e.getCause( );
 			if( cause == null ) {

@@ -40,46 +40,44 @@ import com.akiban.sql.StandardException;
 public class DataBufferManager implements Environment {	
 	private static final Logger LOG = Logger.getLogger( DataBufferManager.class );
 
-	private ConcurrentHashMap< String, ConcurrentHashMap< Long, DataBuffer > > _dbs = (
+	private ConcurrentHashMap< String, ConcurrentHashMap< Long, DataBuffer > > dbs = (
 		new ConcurrentHashMap< String, ConcurrentHashMap< Long, DataBuffer > >( )
 	);
-	private DBTransaction _sqlca; 
-	private Locale _locale; 
-	private SimpleDateFormat _dateClientFormat;
-	private SimpleDateFormat _dateServerFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+	private DBTransaction sqlca; 
+	private Locale locale; 
+	private SimpleDateFormat cliDateFormat;
+	private SimpleDateFormat srvDateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 	
 	/**
 	 * @param sqlca
 	 *            the transaction object
 	 * @param locale
 	 *            the current client locale
-	 * @param dateClientFormat
+	 * @param cliDateFormat
 	 *            current client date time format
 	 * 
 	 * @throws IOException
 	 */
 	public DataBufferManager( 
-		DBTransaction sqlca, 
-		Locale locale, 
-		SimpleDateFormat dateClientFormat 
+		DBTransaction sqlca, Locale locale, SimpleDateFormat cliDateFormat 
 	) throws IOException {
-		_sqlca = sqlca;
-		_locale = locale;
-		_dateClientFormat = dateClientFormat;
+		this.sqlca = sqlca;
+		this.locale = locale;
+		this.cliDateFormat = cliDateFormat;
 	}
 	
 	/**
 	* Closes data buffer manager and all bound data buffers
 	*/
 	public void close( ) {
-		for( String sDataBufferName : _dbs.keySet( ) ) {
-			ConcurrentHashMap< Long, DataBuffer > dbMap = _dbs.get( sDataBufferName );
+		for( String sDataBufferName : dbs.keySet( ) ) {
+			ConcurrentHashMap< Long, DataBuffer > dbMap = dbs.get( sDataBufferName );
 			for( Long lUID : dbMap.keySet( ) ) {
 				dbMap.get( lUID ).close( );
 			}
 			dbMap.clear( );
 		}
-		_dbs.clear( );
+		dbs.clear( );
 	}
 
 	/**
@@ -195,7 +193,7 @@ public class DataBufferManager implements Environment {
 	 */
 	@Override
 	public SimpleDateFormat getClientDateFormat( ) {
-		return( _dateClientFormat );
+		return( cliDateFormat );
 	}
 
 	/**
@@ -203,7 +201,7 @@ public class DataBufferManager implements Environment {
 	 */
 	@Override
 	public SimpleDateFormat getServerDateFormat( ) {
-		return( _dateServerFormat );
+		return( srvDateFormat );
 	}
 
 	/**
@@ -211,7 +209,7 @@ public class DataBufferManager implements Environment {
 	 */
 	@Override
 	public Locale getLocale( ) {
-		return( _locale );
+		return( locale );
 	}
 
 	/**
@@ -219,7 +217,7 @@ public class DataBufferManager implements Environment {
 	 */
 	@Override
 	public DBTransaction getTransObject( ) {
-		return( _sqlca );
+		return( sqlca );
 	}
 
 	/**
@@ -252,7 +250,7 @@ public class DataBufferManager implements Environment {
 	 * @return the data buffers map of the same kind
 	 */
 	private ConcurrentHashMap< Long, DataBuffer > get( String sDataBufferName ) {
-		return( _dbs.get( sDataBufferName ) );
+		return( dbs.get( sDataBufferName ) );
 	}
 
 	/**
@@ -267,7 +265,7 @@ public class DataBufferManager implements Environment {
 		if( sDataBufferName == null || "".equals( sDataBufferName ) ) {
 			throw new IllegalArgumentException( sDataBufferName );
 		}
-		String sLocale = _locale.getLanguage( );
+		String sLocale = locale.getLanguage( );
 		return(
 			Util.DEFAULT_LOCALE.equals( sLocale ) || "".equals( sLocale ) ? 
 			sDataBufferName : 
@@ -289,7 +287,7 @@ public class DataBufferManager implements Environment {
 		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
 		if( dbMap == null ) {
 			dbMap = new ConcurrentHashMap< Long, DataBuffer >( );
-			ConcurrentHashMap< Long, DataBuffer > map = _dbs.putIfAbsent( sDataBufferName, dbMap );
+			ConcurrentHashMap< Long, DataBuffer > map = dbs.putIfAbsent( sDataBufferName, dbMap );
 			if( map != null ) {
 				dbMap = map;
 			}

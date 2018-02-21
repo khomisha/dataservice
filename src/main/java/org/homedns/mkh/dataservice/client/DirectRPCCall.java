@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Mikhail Khodonov
+ * Copyright 2017 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,7 +25,6 @@ import org.homedns.mkh.dataservice.shared.ReportResponse;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.StoredProcResponse;
-import org.homedns.mkh.dataservice.shared.Util;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -78,11 +77,7 @@ public class DirectRPCCall extends AbstractRPCCall {
 		 */
 		public void onFailure( Throwable caught ) {
 			UnmaskEvent.fire( );
-			Util.signalMsg( 
-				caught, 
-				Util.MSG_BOX, 
-				getMsg( request.getHandlerClassName( ), caught ) 
-			);
+			signalMsg( caught, getMsg( request.getHandlerClassName( ), caught ) );
 		}
 		
 		/**
@@ -91,16 +86,12 @@ public class DirectRPCCall extends AbstractRPCCall {
 		public void onSuccess( Response response ) {
 			UnmaskEvent.fire( );
 			if( response.getResult( ) == Response.FAILURE ) {
-				Util.signalMsg( 
-					null, 
-					Util.MSG_BOX, 
-					getMsg( request.getHandlerClassName( ), response ) 
-				);
+				signalMsg( null, getMsg( request.getHandlerClassName( ), response ) );
 			} else {
 				if( response instanceof ReportResponse || response instanceof StoredProcResponse ) {
 					String sMsg = getMsg( null, response );
 					if( sMsg != null ) {
-						Util.signalMsg( null, Util.MSG_BOX, sMsg );						
+						signalMsg( null, sMsg );						
 					}
 					RPCResponseEvent.fire( response.getID( ), response );
 				}			

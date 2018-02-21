@@ -81,8 +81,9 @@ public class Column {
 	private String dddbName;
 	private String dddbDisplayCol;
 	private String dddbDataCol;
-	private String reportParam;
+	private String reportParam = "";
 	private int colNum;
+	private String pattern = "";
 	
 	public Column( ) {
 	}
@@ -408,4 +409,22 @@ public class Column {
 	public void setColNum( int colNum ) {
 		this.colNum = colNum;
 	}
+	
+	/**
+	 * Returns column format pattern
+	 * 
+	 * @return the column format pattern
+	 */
+	public String getPattern( ) {
+		return( pattern );
+	}
+
+	/**
+	 * Sets column format pattern
+	 * 
+	 * @param pattern the column format pattern to set
+	 */
+	public void setPattern( String pattern ) {
+		this.pattern = pattern;
+	}	
 }

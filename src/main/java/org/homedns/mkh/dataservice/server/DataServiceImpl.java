@@ -19,12 +19,13 @@
 package org.homedns.mkh.dataservice.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
 import org.apache.log4j.Logger;
+import org.homedns.mkh.databuffer.ResourceClosedException;
 import org.homedns.mkh.dataservice.client.DataService;
 import org.homedns.mkh.dataservice.server.handler.RequestHandler;
 import org.homedns.mkh.dataservice.server.handler.RequestHandlerBuilder;
 import org.homedns.mkh.dataservice.shared.GenericResponse;
+import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.Util;
@@ -86,24 +87,20 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 */
 	public Response doRPC( Request request ) {
 		Response result = null;
-		String s = (
-			request.getID( ) == null ? 
-			request.getHandlerClassName( ) : 
-			request.getID( ).toString( )
-		);
-		LOG.debug( getClass( ).getName( ) + ": doRPC: " + s );
+		Id id = request.getID( );
+		String sMsg = ( id == null ) ? request.getHandlerClassName( ) : id.toString( );
+		LOG.debug( getClass( ).getName( ) + ": doRPC: " + sMsg );
 		try {
 			RequestHandler handler = bindHandler( request );
 			result =  handler.execute( request );
 		}
 		catch( Exception e ) {
 			result = ( result == null ) ? new GenericResponse( ) : result;
-			String sMsg = (
-				request.getID( ) == null ? 
-				request.getHandlerClassName( ) : 
-				request.getID( ).getName( )
-			);
-			setFailure( result, sMsg, e );
+			setFailure( result, sMsg, e );	
+			HttpSession session = getHttpServletRequest( ).getSession( false );
+			if( e instanceof ResourceClosedException && session != null ) {
+				session.invalidate( );	// ????
+			}
 		}
 		return( result );
 	}
@@ -130,7 +127,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 		}
 		return( handler );
 	}
-	
+
 	/**
 	* Returns http servlet request.
 	*
@@ -292,7 +289,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * 
 	 * @return the session attribute value
 	 */
-	protected Object getSessionAttribute( String sAttribute ) {
+	public Object getSessionAttribute( String sAttribute ) {
 		HttpSession session = getHttpServletRequest( ).getSession( );
 		return( session.getAttribute( sAttribute ) );		
 	}
@@ -305,7 +302,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @param value
 	 *            the attribute value to set
 	 */
-	protected void setSessionAttribute( String sAttribute, Object value ) {
+	public void setSessionAttribute( String sAttribute, Object value ) {
 		HttpSession session = getHttpServletRequest( ).getSession( );
 		session.setAttribute( sAttribute, value );		
 	}

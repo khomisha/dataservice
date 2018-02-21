@@ -37,7 +37,9 @@ public class LogoutHandler extends GenericRequestHandler {
 	@Override
 	public Response execute( Request request ) throws Exception {
 		LoginContext lc = Context.getInstance( ).getLoginContext( );
-		lc.logout( );
+		if( lc != null ) {
+			lc.logout( );
+		}
 		Response response = createResponse( request );
 		response.setResult( Response.SUCCESS );
 		return( response );

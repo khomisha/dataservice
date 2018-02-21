@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2017 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -106,10 +106,10 @@ import javax.security.auth.callback.TextInputCallback;
 public class SecurityService implements LoginModule {
 	private static final Logger LOG = Logger.getLogger( SecurityService.class );
 
-	private Subject _subject;
-    private CallbackHandler _callbackHandler;
-    private Map< String, ? > _options;
-    private Callback[] _callbacks;
+	private Subject subject;
+    private CallbackHandler callbackHandler;
+    private Map< String, ? > options;
+    private Callback[] callbacks;
 	
 	/**
 	 * @see javax.security.auth.spi.LoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
@@ -121,9 +121,9 @@ public class SecurityService implements LoginModule {
 		Map< String, ? > sharedState, 
 		Map< String, ? > options 
 	) {
-	    _subject = subject;
-	    _callbackHandler = callbackHandler;
-	    _options = options;
+	    this.subject = subject;
+	    this.callbackHandler = callbackHandler;
+	    this.options = options;
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean login( ) throws LoginException {
-        _callbacks = new Callback[] {
+        callbacks = new Callback[] {
         	new NameCallback( "username" ),
         	new PasswordCallback( "password: ", false ),
         	new LanguageCallback( ),
@@ -140,14 +140,14 @@ public class SecurityService implements LoginModule {
         boolean bLogin = false;
         CheckupService cs = null;
         try {
-			_callbackHandler.handle( _callbacks );
-			String sClassName = ( String )_options.get( "checkup_service_class" );
+			callbackHandler.handle( callbacks );
+			String sClassName = ( String )options.get( "checkup_service_class" );
 			LOG.info( "locale: " + getLocale( ).getLanguage( ) );
 			LOG.info( "datetime format: " + getClientDateFormat( ) );
 			LOG.debug( "checkup service class: " + sClassName );
 			cs = ( CheckupService )Class.forName( sClassName ).newInstance( );
 			cs.init( 
-				_options, 
+				options, 
 				getDataSource( "jdbc_login_resource_name" ), 
 				getLocale( ), 
 				new SimpleDateFormat( getClientDateFormat( ) ) 
@@ -201,15 +201,15 @@ public class SecurityService implements LoginModule {
 		DataBufferManager dbm = null;
 		try {
 			dbm = getDataBufferMgr( );
-			_subject.getPrincipals( ).add( new UserPrincipal( getLogin( ) ) );
-			_subject.getPrincipals( ).add( new LocalePrincipal( getLocale( ) ) );
+			subject.getPrincipals( ).add( new UserPrincipal( getLogin( ) ) );
+			subject.getPrincipals( ).add( new LocalePrincipal( getLocale( ) ) );
 			// see user_access_right.dbuf for example
-			String sDataBufferName = ( String )_options.get( "access_rights_db" );
+			String sDataBufferName = ( String )options.get( "access_rights_db" );
 			Id id = new Id( );
 			id.setName( sDataBufferName );
 			DataBuffer accessDB = getDataBuffer( dbm, id );
 			accessDB.retrieve( Arrays.asList( new Serializable[] { getLogin( ) } ) );
-			_subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, id ) );
+			subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, id ) );
 		}
 		catch( Exception e ) {
 			if( dbm != null ) {
@@ -227,7 +227,7 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean abort( ) throws LoginException {
-		_subject = null;
+		subject = null;
 		return( true );
 	}
 
@@ -235,16 +235,19 @@ public class SecurityService implements LoginModule {
 	 * @see javax.security.auth.spi.LoginModule#logout()
 	 */
 	@Override
-	public boolean logout( ) throws LoginException {	
+	public boolean logout( ) throws LoginException {
+		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
 		try {
-			Context.getInstance( ).getDataBufferManager( ).close( );
+			LOG.debug( "user: " + getLogin( ) + " logout" );
+			dbm.close( );
 		} catch( Exception e ) {
         	LoginException le = new LoginException( );
         	le.initCause( e );
         	throw le;
 		}
 		finally {
-			_subject = null;
+			subject = null;
+			dbm = null;
 		}
 		return( true );
 	}
@@ -255,7 +258,7 @@ public class SecurityService implements LoginModule {
 	 * @return the subject
 	 */
 	protected Subject getSubject( ) {
-		return( _subject );
+		return( subject );
 	}
 	
 	/**
@@ -264,7 +267,7 @@ public class SecurityService implements LoginModule {
 	 * @return the input parameters callback array
 	 */
 	protected Callback[] getInputParams( ) {
-		return( _callbacks );
+		return( callbacks );
 	}
 	
 	/**
@@ -273,7 +276,7 @@ public class SecurityService implements LoginModule {
 	 * @return the options
 	 */
 	protected Map< String, ? > getOptions( ) {
-		return( _options );
+		return( options );
 	}
 	
 	/**
@@ -282,7 +285,7 @@ public class SecurityService implements LoginModule {
 	 * @return the login
 	 */
 	protected String getLogin( ) {
-		return( ( ( NameCallback )_callbacks[ 0 ] ).getName( ) );
+		return( ( ( NameCallback )callbacks[ 0 ] ).getName( ) );
 	}
 
 	/**
@@ -291,7 +294,7 @@ public class SecurityService implements LoginModule {
 	 * @return the password
 	 */
 	protected String getPass( ) {
-		return( String.valueOf( ( ( PasswordCallback )_callbacks[ 1 ] ).getPassword( ) ) );
+		return( String.valueOf( ( ( PasswordCallback )callbacks[ 1 ] ).getPassword( ) ) );
 	}
 	
 	/**
@@ -300,7 +303,7 @@ public class SecurityService implements LoginModule {
 	 * @return the locale
 	 */
 	protected Locale getLocale( ) {
-		return( ( ( LanguageCallback )_callbacks[ 2 ] ).getLocale( ) );
+		return( ( ( LanguageCallback )callbacks[ 2 ] ).getLocale( ) );
 	}
 	
 	/**
@@ -309,7 +312,7 @@ public class SecurityService implements LoginModule {
 	 * @return the date time format
 	 */
 	protected String getClientDateFormat( ) {
-		return( ( ( TextInputCallback )_callbacks[ 3 ] ).getText( ) );
+		return( ( ( TextInputCallback )callbacks[ 3 ] ).getText( ) );
 	}
 	
 	/**
@@ -333,7 +336,7 @@ public class SecurityService implements LoginModule {
 			);
 		}
 		DataSource dataSource = ( DataSource )envContext.lookup( 
-			( String )_options.get( sResourceName ) 
+			( String )options.get( sResourceName ) 
 		);
 		if( dataSource == null ) {
 			throw new ConfigurationException( 

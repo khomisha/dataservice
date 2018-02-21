@@ -27,11 +27,11 @@ import org.homedns.mkh.dataservice.client.sender.RPCRequestSender;
 @SuppressWarnings( "serial" )
 public class GenericRequest implements Request {
 
-	private Id _id;
-	private String _sHandlerClassName;
-	private String _sResponseClassName;
-	private boolean _bInitPresenter = true;
-	private String _sSenderClassName;
+	private Id id;
+	private String sHandlerClassName;
+	private String sResponseClassName;
+	private boolean bInitPresenter = true;
+	private String sSenderClassName;
 	private boolean bBatch;
 
 	public GenericRequest( ) { 
@@ -44,11 +44,11 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public Request copy( Request inputRequest ) {
-		inputRequest.setHandlerClassName( _sHandlerClassName );
-		inputRequest.setID( _id );
-		inputRequest.setInitPresenter( _bInitPresenter );
-		inputRequest.setResponseClassName( _sResponseClassName );
-		inputRequest.setSenderType( _sSenderClassName );
+		inputRequest.setHandlerClassName( sHandlerClassName );
+		inputRequest.setID( id );
+		inputRequest.setInitPresenter( bInitPresenter );
+		inputRequest.setResponseClassName( sResponseClassName );
+		inputRequest.setSenderType( sSenderClassName );
 		return( inputRequest );
 	}
 
@@ -57,7 +57,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public void setID( Id id ) {
-		_id = id;
+		this.id = id;
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public Id getID( ) {
-		return( _id );
+		return( id );
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public String getHandlerClassName( ) {
-		return( _sHandlerClassName );
+		return( sHandlerClassName );
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public void setHandlerClassName( String sHandlerClassName ) {
-		_sHandlerClassName = sHandlerClassName;
+		this.sHandlerClassName = sHandlerClassName;
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public boolean isInitPresenter( ) {
-		return( _bInitPresenter );
+		return( bInitPresenter );
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public void setInitPresenter( boolean bInitPresenter ) {
-		_bInitPresenter = bInitPresenter;
+		this.bInitPresenter = bInitPresenter;
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public String getSenderType( ) {
-		return( _sSenderClassName );
+		return( sSenderClassName );
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public void setSenderType( String sSenderClassName ) {
-		_sSenderClassName = sSenderClassName;
+		this.sSenderClassName = sSenderClassName;
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public String getResponseClassName( ) {
-		return( _sResponseClassName );
+		return( sResponseClassName );
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class GenericRequest implements Request {
 	 */
 	@Override
 	public void setResponseClassName( String sResponseClassName ) {
-		_sResponseClassName = sResponseClassName;
+		this.sResponseClassName = sResponseClassName;
 	}
 
 	/**

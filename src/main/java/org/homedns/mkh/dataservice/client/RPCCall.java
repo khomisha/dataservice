@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2017 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,8 +27,6 @@ import org.homedns.mkh.dataservice.shared.LoginResponse;
 import org.homedns.mkh.dataservice.shared.LogoutResponse;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
-import org.homedns.mkh.dataservice.shared.Util;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -79,7 +77,7 @@ public class RPCCall extends AbstractRPCCall{
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
-			Util.signalMsg( caught, Util.MSG_BOX, sErr );
+			signalMsg( caught, sErr );
 		}
 		
 		/**
@@ -89,12 +87,12 @@ public class RPCCall extends AbstractRPCCall{
 			presenter.setRegisterLock( false );
 			UnmaskEvent.fire( );
 			if( response.getResult( ) == Response.FAILURE ) {
-				Util.signalMsg( null, Util.MSG_BOX, getMsg( sHandlerClassName, response ) );
+				signalMsg( null, getMsg( sHandlerClassName, response ) );
 			} else {
 				presenter.onResponse( response );
 				String sMsg = getMsg( null, response );
 				if( sMsg != null ) {
-					Util.signalMsg( null, Util.MSG_BOX, sMsg );						
+					signalMsg( null, sMsg );						
 				}
 			}
 			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
