@@ -63,16 +63,11 @@ public class Parameters {
 	 * @throws IOException
 	 */
 	private void readConfig( String sFileName ) throws FileNotFoundException, IOException {
-		FileInputStream stream = null;
-		try {
-			stream = new FileInputStream( sFileName );
+		try( 
+			FileInputStream stream = new FileInputStream( sFileName ); 
+		) {		
 			parameters.load( stream );
 			LOG.debug( "Properties file " + sFileName + " is successfully loaded" );
-		}
-		finally {
-			if( stream != null ) {
-				stream.close( );
-			}
 		}
 	}
 }

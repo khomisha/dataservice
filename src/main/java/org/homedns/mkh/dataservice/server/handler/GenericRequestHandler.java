@@ -18,14 +18,10 @@
 
 package org.homedns.mkh.dataservice.server.handler;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import org.homedns.mkh.databuffer.DataBuffer;
-import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
 import org.homedns.mkh.dataservice.server.Context;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
-import com.akiban.sql.StandardException;
 
 /**
  * Generic request handler
@@ -44,14 +40,9 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	 * 
 	 * @return the data buffer
 	 * 
-	 * @throws IOException
-	 * @throws SQLException
-	 * @throws StandardException
-	 * @throws InvalidDatabufferDesc
+	 * @throws Exception
 	 */
-	protected DataBuffer getDataBuffer( 
-		Request request 
-	) throws IOException, SQLException, StandardException, InvalidDatabufferDesc {
+	protected DataBuffer getDataBuffer( Request request ) throws Exception {
 		DataBuffer db = Context.getInstance( ).getDataBufferManager( ).getDataBuffer( 
 			request.getID( ) 
 		);

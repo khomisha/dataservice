@@ -20,10 +20,12 @@ package org.homedns.mkh.dataservice.server.handler;
 
 import java.io.Serializable;
 import java.util.List;
+
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.RetrieveRequest;
+import org.homedns.mkh.dataservice.shared.RetrieveResponse;
 
 /**
  * Retrieve request handler
@@ -41,7 +43,7 @@ public class RetrieveHandler extends GenericRequestHandler {
 		RetrieveRequest retrieveRequest = ( RetrieveRequest )request;
 		DataBuffer db = getDataBuffer( retrieveRequest );
 		List< Serializable > args = ( 
-			( retrieveRequest.getArgs( ) == null ) ? 
+			retrieveRequest.getArgs( ) == null ? 
 			null : 
 			retrieveRequest.getArgs( ).get( 0 )
 		);
@@ -52,9 +54,10 @@ public class RetrieveHandler extends GenericRequestHandler {
 		} else {
 			iRowCount = ( args == null ) ? db.retrieve( sCondition ) : db.retrieve( args, sCondition );
 		}
-		Response response = createResponse( request );
+		RetrieveResponse response = ( RetrieveResponse )createResponse( request );
 		response.setRowCount( iRowCount );
 		response.setJsonData( db.getJson( ) );
+		response.setForcedRetrieve( retrieveRequest.isForcedRetrieve( ) );
 		if( !retrieveRequest.isInitPresenter( ) ) {
 			response.setDataBufferDesc( db.getDescriptionAsJson( ) );
 			response.setServerPaging( db.getPageSize( ) > 0 );						

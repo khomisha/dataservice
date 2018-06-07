@@ -159,6 +159,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 		setRegisterLock( true );
 		setInitiatingView( view );
 		getRequest( ).setInitPresenter( false );
+		LOG.config( view.getID( ).getName( ) + ": dataRequest" );
 		execRPC( getRequest( ) );						
 	}
 	

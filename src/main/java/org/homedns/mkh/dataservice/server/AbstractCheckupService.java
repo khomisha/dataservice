@@ -30,9 +30,6 @@ import org.homedns.mkh.databuffer.DBTransaction;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.databuffer.DataBufferMetaData;
 import org.homedns.mkh.databuffer.Environment;
-import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
-import com.akiban.sql.StandardException;
-import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -85,10 +82,7 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 * @see org.homedns.mkh.dataservice.server.CheckupService#isValidUser(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public boolean isValidUser( 
-		String sLogin, 
-		String sPassword 
-	) throws InvalidDatabufferDesc, IOException, SQLException, StandardException {
+	public boolean isValidUser( String sLogin, String sPassword ) throws Exception {
 		DataBuffer db = null;
 		int iRowCount = 0;
 		try {

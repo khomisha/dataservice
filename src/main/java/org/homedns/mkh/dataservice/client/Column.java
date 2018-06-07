@@ -84,6 +84,7 @@ public class Column {
 	private String reportParam = "";
 	private int colNum;
 	private String pattern = "";
+	private int width = 0;
 	
 	public Column( ) {
 	}
@@ -427,4 +428,22 @@ public class Column {
 	public void setPattern( String pattern ) {
 		this.pattern = pattern;
 	}	
+
+	/**
+	 * Returns column width in pixels
+	 * 
+	 * @return the column width
+	 */
+	public int getWidth( ) {
+		return( width );
+	}
+
+	/**
+	 * Sets column width in pixels
+	 * 
+	 * @param width the column width to set
+	 */
+	public void setWidth( int width ) {
+		this.width = width;
+	}
 }

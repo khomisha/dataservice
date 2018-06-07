@@ -26,6 +26,22 @@ package org.homedns.mkh.dataservice.shared;
 public class RetrieveResponse extends GenericResponse {
 	private static final long serialVersionUID = 4290046176611769303L;
 
+	private boolean bForcedRetrieve = false;
+
 	public RetrieveResponse( ) {
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#isForcedRetrieve()
+	 */
+	public boolean isForcedRetrieve( ) {
+		return( bForcedRetrieve );
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#setForcedRetrieve(boolean)
+	 */
+	public void setForcedRetrieve( boolean bForcedRetrieve ) {
+		this.bForcedRetrieve = bForcedRetrieve;
 	}
 }

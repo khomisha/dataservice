@@ -22,16 +22,13 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
-import java.sql.SQLException;
 import org.apache.log4j.Logger;
 import org.homedns.mkh.databuffer.DBTransaction;
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.databuffer.DataBufferMetaData;
 import org.homedns.mkh.databuffer.Environment;
-import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
 import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Util;
-import com.akiban.sql.StandardException;
 
 /**
  * Data buffer manager implementation
@@ -89,14 +86,9 @@ public class DataBufferManager implements Environment {
 	 * 
 	 * @return the data buffer object or null
 	 * 
-	 * @throws InvalidDatabufferDesc
-	 * @throws IOException
-	 * @throws SQLException
-	 * @throws StandardException
+	 * @throws Exception
 	 */
-	public DataBuffer getDataBuffer( 
-		Id id 
-	) throws InvalidDatabufferDesc, IOException, SQLException, StandardException {
+	public DataBuffer getDataBuffer( Id id ) throws Exception {
 		String sDataBufferName = getLocaleDBName( id.getName( ) );
 		DataBuffer db = getDataBuffer( sDataBufferName, id.getUID( ) );
 		if( db == null ) {
@@ -113,14 +105,9 @@ public class DataBufferManager implements Environment {
 	 * 
 	 * @return the report data buffer
 	 * 
-	 * @throws InvalidDatabufferDesc 
-	 * @throws StandardException 
-	 * @throws SQLException 
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public DataBuffer getReportDataBuffer( 
-		String sDataBufferName 
-	) throws InvalidDatabufferDesc, IOException, SQLException, StandardException {
+	public DataBuffer getReportDataBuffer( String sDataBufferName ) throws Exception {
 		DataBuffer db = null;
 		sDataBufferName = getLocaleDBName( sDataBufferName );
 		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
@@ -164,16 +151,9 @@ public class DataBufferManager implements Environment {
 	 * 
 	 * @return data buffer object.
 	 * 
-	 * @throws InvalidDatabufferDesc
-	 * @throws StandardException
-	 * @throws SQLException
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	protected DataBuffer createDataBuffer( 
-		String sDataBufferName, 
-		Long lUID,
-		Environment env 
-	) throws InvalidDatabufferDesc, IOException, SQLException, StandardException {
+	protected DataBuffer createDataBuffer( String sDataBufferName, Long lUID, Environment env ) throws Exception {
 		DataBuffer db = new DataBuffer( new DataBufferMetaData( sDataBufferName, env ) );
 		putDB( sDataBufferName, lUID, db );
 		LOG.debug( "data buffer created: " + sDataBufferName + "-" + String.valueOf( lUID ) );

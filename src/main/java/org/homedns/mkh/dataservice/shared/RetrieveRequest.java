@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2014-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,8 +27,9 @@ import java.io.Serializable;
 public class RetrieveRequest extends GenericRequest implements Serializable {
 	private static final long serialVersionUID = -546028951543866857L;
 
-	private Data _args;
-	private String _sCondition;
+	private Data args;
+	private String sCondition;
+	private boolean bForcedRetrieve = false;
 	
 	public RetrieveRequest( ) { 
 		setHandlerClassName( "org.homedns.mkh.dataservice.server.handler.RetrieveHandler" );
@@ -45,8 +46,8 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 			throw new IllegalArgumentException( inputRequest.getClass( ).getName( ) );
 		}
 		RetrieveRequest request = ( RetrieveRequest )r;
-		request.setArgs( _args );
-		request.setCondition( _sCondition );
+		request.setArgs( args );
+		request.setCondition( sCondition );
 		return( request );
 	}
 
@@ -56,7 +57,7 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 	 * @return the retrieval arguments
 	 */
 	public Data getArgs( ) {
-		return( _args );
+		return( args );
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 	 * @return the filter condition
 	 */
 	public String getCondition( ) {
-		return( _sCondition );
+		return( sCondition );
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 	 *            the retrieval arguments to set
 	 */
 	public void setArgs( Data args ) {
-		_args = args;
+		this.args = args;
 	}
 
 	/**
@@ -85,6 +86,20 @@ public class RetrieveRequest extends GenericRequest implements Serializable {
 	 *            the filter condition to set
 	 */
 	public void setCondition( String sCondition ) {
-		_sCondition = sCondition;
+		this.sCondition = sCondition;
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#isForcedRetrieve()
+	 */
+	public boolean isForcedRetrieve( ) {
+		return( bForcedRetrieve );
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.client.view.View#setForcedRetrieve(boolean)
+	 */
+	public void setForcedRetrieve( boolean bForcedRetrieve ) {
+		this.bForcedRetrieve = bForcedRetrieve;
 	}
 }

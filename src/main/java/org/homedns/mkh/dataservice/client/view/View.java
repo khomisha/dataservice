@@ -190,4 +190,18 @@ public interface View {
 	 * Reloads view
 	 */
 	public void reload( );
+
+	/**
+	 * Returns forced retrieve flag
+	 * 
+	 * @return the forced retrieve flag
+	 */
+	public boolean isForcedRetrieve( );
+
+	/**
+	 * Sets forced retrieve flag
+	 * 
+	 * @param bForcedRetrieve the forced retrieve flag to set
+	 */
+	public void setForcedRetrieve( boolean bForcedRetrieve );
 }

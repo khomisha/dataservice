@@ -18,15 +18,12 @@
 
 package org.homedns.mkh.dataservice.server;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.homedns.mkh.databuffer.InvalidDatabufferDesc;
-import com.akiban.sql.StandardException;
 
 /**
  * Checkup service validates user and checks login attempt count
@@ -59,16 +56,13 @@ public interface CheckupService {
 	 * @param sLogin
 	 *            the user login
 	 * @param sPassword
-	 *            the useer password
+	 *            the user password
 	 * 
 	 * @return true if authentication is success false otherwise
 	 * 
-	 * @throws InvalidDatabufferDesc
+	 * @throws Exception
 	 */
-	public boolean isValidUser( 
-		String sLogin, 
-		String sPassword 
-	) throws IOException, SQLException, StandardException, InvalidDatabufferDesc;
+	public boolean isValidUser( String sLogin, String sPassword ) throws Exception;
 
 	/**
 	 * Inits service.
