@@ -26,7 +26,6 @@ import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.server.AccessRightsPrincipal;
 import org.homedns.mkh.dataservice.server.Context;
 import org.homedns.mkh.dataservice.server.LoginCallbackHandler;
-import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.LoginRequest;
@@ -62,7 +61,6 @@ public class LoginHandler extends GenericRequestHandler {
 			lc.login( );
 			Context.getInstance( ).setLoginContext( lc );
 			LOG.debug( "access presenter id: " + request.getID( ).toString( ) );
-			Context.getInstance( ).setSessionAttribute( Id.class.getName( ), request.getID( ) );
 			Set< AccessRightsPrincipal > rights = lc.getSubject( ).getPrincipals( AccessRightsPrincipal.class ); //???
 			AccessRightsPrincipal[] accessRights = rights.toArray( new AccessRightsPrincipal[ rights.size( ) ] );
 			DataBuffer db = accessRights[ 0 ].getDataBuffer( );

@@ -18,7 +18,6 @@
 
 package org.homedns.mkh.dataservice.server;
 
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.servlet.ServletException;
@@ -102,7 +101,7 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 			);
 		}
 		catch( Exception e ) {
-			String sErr = Context.getBundle( Locale.getDefault( ) ).getString( "loggingFailed" );
+			String sErr = Context.getLocalizedMsg( "loggingFailed" );
 			LOG.fatal( sErr, e );
 			return( sErr );
 		}

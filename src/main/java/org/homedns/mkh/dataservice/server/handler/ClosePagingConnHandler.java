@@ -37,8 +37,7 @@ public class ClosePagingConnHandler extends GenericRequestHandler {
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
-		ClosePagingConnRequest insertRequest = ( ClosePagingConnRequest )request;
-		DataBuffer db = getDataBuffer( insertRequest );
+		DataBuffer db = getDataBuffer( ( ClosePagingConnRequest )request );
 		db.closeConn( );
 		Response response = createResponse( request );
 		response.setResult( Response.SUCCESS );

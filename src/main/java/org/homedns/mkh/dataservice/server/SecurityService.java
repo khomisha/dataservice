@@ -171,9 +171,7 @@ public class SecurityService implements LoginModule {
         	}
         }
         if( !bLogin ) {
-        	throw new FailedLoginException( 
-        		Context.getBundle( getLocale( ) ).getString( "invalidLogin" ) 
-        	); 
+        	throw new FailedLoginException( Context.getLocalizedMsg( "invalidLogin" ) ); 
         }
        	return( bLogin );
 	}
@@ -236,10 +234,13 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean logout( ) throws LoginException {
-		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
+		DataBufferManager dbm = null;
 		try {
-			LOG.debug( "user: " + getLogin( ) + " logout" );
-			dbm.close( );
+			dbm = Context.getInstance( ).getDataBufferManager( );
+			if( dbm != null ) {
+				LOG.debug( "user: " + getLogin( ) + " logout" );
+				dbm.close( );
+			}
 		} catch( Exception e ) {
         	LoginException le = new LoginException( );
         	le.initCause( e );
@@ -247,7 +248,9 @@ public class SecurityService implements LoginModule {
 		}
 		finally {
 			subject = null;
-			dbm = null;
+			if( dbm != null ) {
+				dbm = null;
+			}
 		}
 		return( true );
 	}
@@ -331,16 +334,14 @@ public class SecurityService implements LoginModule {
 			"java:/comp/env" 
 		);
 		if( envContext == null ) {
-			throw new ConfigurationException( 
-				Context.getBundle( getLocale( ) ).getString( "noContext" ) 
-			);
+			throw new ConfigurationException( Context.getLocalizedMsg( "noContext" ) );
 		}
 		DataSource dataSource = ( DataSource )envContext.lookup( 
 			( String )options.get( sResourceName ) 
 		);
 		if( dataSource == null ) {
 			throw new ConfigurationException( 
-				Context.getBundle( getLocale( ) ).getString( "noDatasource" ) + ": " + sResourceName 
+				Context.getLocalizedMsg( "noDatasource" ) + ": " + sResourceName 
 			);			
 		}
 		return( dataSource );

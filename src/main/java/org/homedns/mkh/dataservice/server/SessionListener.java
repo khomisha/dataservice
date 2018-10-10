@@ -18,8 +18,11 @@
 
 package org.homedns.mkh.dataservice.server;
 
+//import javax.security.auth.login.LoginContext;
+//import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -45,6 +48,15 @@ public class SessionListener implements HttpSessionListener {
 	 */
 	@Override
 	public void sessionDestroyed( HttpSessionEvent event ) {
+//		LoginContext lc = Context.getInstance( ).getLoginContext( );
+//		if( lc != null ) {
+//			try {
+//				lc.logout( );
+//			} 
+//			catch( LoginException e ) {
+//				LOG.error( e.getMessage( ) );
+//			}
+//		}
 		LOG.debug( "session destroyed: " + event.getSession( ).getId( ) );
 	}
 }

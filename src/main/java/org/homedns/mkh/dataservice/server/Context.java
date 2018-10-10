@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,25 +27,25 @@ import org.homedns.mkh.databuffer.Util;
  *
  */
 public class Context {
-	private static DataServiceImpl _ds;
+	private static DataServiceImpl ds;
 
 	/**
-	 * Returns the remote service servlet instance
+	 * Returns the data service servlet instance
 	 * 
 	 * @return the remote service servlet instance
 	 */
 	public static DataServiceImpl getInstance( ) {
-		return( _ds );
+		return( ds );
 	}
 
 	/**
-	 * Sets remote service servlet instance
+	 * Sets data service servlet instance
 	 * 
 	 * @param ds
-	 *            the remote service servlet instance to set
+	 *            the data service servlet instance to set
 	 */
 	public static void setInstance( DataServiceImpl ds ) {
-		_ds = ds;
+		Context.ds = ds;
 	}
 	
 	/**
@@ -58,5 +58,22 @@ public class Context {
 	 */
 	public static ResourceBundle getBundle( Locale locale ) {
 		return( Util.getBundle( "org.homedns.mkh.dataservice.server.Messages", locale ) );
+	}
+	
+	/**
+	 * Returns localized message by specified key
+	 * 
+	 * @param sKey the key
+	 * 
+	 * @return the localized message
+	 */
+	public static String getLocalizedMsg( String sKey ) {
+		Locale locale = null;
+		if( ds.getDataBufferManager( ) == null ) {
+			locale = Locale.getDefault( );
+		} else {
+			locale = ds.getDataBufferManager( ).getLocale( );
+		}
+		return( getBundle( locale ).getString( sKey ) );
 	}
 }

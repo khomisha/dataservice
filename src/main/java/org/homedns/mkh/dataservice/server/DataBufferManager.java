@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 Mikhail Khodonov
+ * Copyright 2010-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,11 +22,11 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
-import org.apache.log4j.Logger;
+
+import org.homedns.mkh.databuffer.AbstractDataBufferManager;
 import org.homedns.mkh.databuffer.DBTransaction;
 import org.homedns.mkh.databuffer.DataBuffer;
-import org.homedns.mkh.databuffer.DataBufferMetaData;
-import org.homedns.mkh.databuffer.Environment;
+import org.homedns.mkh.databuffer.UUID;
 import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Util;
 
@@ -34,16 +34,7 @@ import org.homedns.mkh.dataservice.shared.Util;
  * Data buffer manager implementation
  *
  */
-public class DataBufferManager implements Environment {	
-	private static final Logger LOG = Logger.getLogger( DataBufferManager.class );
-
-	private ConcurrentHashMap< String, ConcurrentHashMap< Long, DataBuffer > > dbs = (
-		new ConcurrentHashMap< String, ConcurrentHashMap< Long, DataBuffer > >( )
-	);
-	private DBTransaction sqlca; 
-	private Locale locale; 
-	private SimpleDateFormat cliDateFormat;
-	private SimpleDateFormat srvDateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+public class DataBufferManager extends AbstractDataBufferManager {	
 	
 	/**
 	 * @param sqlca
@@ -58,43 +49,9 @@ public class DataBufferManager implements Environment {
 	public DataBufferManager( 
 		DBTransaction sqlca, Locale locale, SimpleDateFormat cliDateFormat 
 	) throws IOException {
-		this.sqlca = sqlca;
-		this.locale = locale;
-		this.cliDateFormat = cliDateFormat;
-	}
-	
-	/**
-	* Closes data buffer manager and all bound data buffers
-	*/
-	public void close( ) {
-		for( String sDataBufferName : dbs.keySet( ) ) {
-			ConcurrentHashMap< Long, DataBuffer > dbMap = dbs.get( sDataBufferName );
-			for( Long lUID : dbMap.keySet( ) ) {
-				dbMap.get( lUID ).close( );
-			}
-			dbMap.clear( );
-		}
-		dbs.clear( );
-	}
-
-	/**
-	 * Returns data buffer (if it doesn't exist try to create it and adds to the
-	 * databuffer map).
-	 * 
-	 * @param id
-	 *            the identifier object
-	 * 
-	 * @return the data buffer object or null
-	 * 
-	 * @throws Exception
-	 */
-	public DataBuffer getDataBuffer( Id id ) throws Exception {
-		String sDataBufferName = getLocaleDBName( id.getName( ) );
-		DataBuffer db = getDataBuffer( sDataBufferName, id.getUID( ) );
-		if( db == null ) {
-			db = createDataBuffer( sDataBufferName, id.getUID( ), this );
-		}
-		return( db );
+		setTransObject( sqlca );
+		setLocale( locale );
+		setClientDateFormat( cliDateFormat );
 	}
 	
 	/**
@@ -112,92 +69,35 @@ public class DataBufferManager implements Environment {
 		sDataBufferName = getLocaleDBName( sDataBufferName );
 		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
 		if( dbMap == null ) {
-			db = createDataBuffer( sDataBufferName, Util.getUID( ), this );			
+			db = createDataBuffer( sDataBufferName, Util.getUID( ) );			
 		} else {
 			Long[] keys = dbMap.keySet( ).toArray( new Long[ dbMap.size( ) ] );
 			db = getDataBuffer( sDataBufferName, keys[ 0 ] );
 		}
 		return( db );
 	}
-	
-	/**
-	 * Returns data buffer object if exists otherwise null.
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * @param lUID
-	 *            the data buffer uid
-	 * 
-	 * @return data buffer object or null.
-	 */
-	private DataBuffer getDataBuffer( String sDataBufferName, Long lUID ) {
-		DataBuffer db = null;
-		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
-		if( dbMap != null ) {
-			db = dbMap.get( lUID );
-		}
-		return( db );	
-	}
 
 	/**
-	 * Creates data buffer.
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * @param lUID
-	 *            the data buffer uid
-	 * @param env
-	 *            the application environment
-	 * 
-	 * @return data buffer object.
-	 * 
-	 * @throws Exception
-	 */
-	protected DataBuffer createDataBuffer( String sDataBufferName, Long lUID, Environment env ) throws Exception {
-		DataBuffer db = new DataBuffer( new DataBufferMetaData( sDataBufferName, env ) );
-		putDB( sDataBufferName, lUID, db );
-		LOG.debug( "data buffer created: " + sDataBufferName + "-" + String.valueOf( lUID ) );
-		return( db );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getDataBufferFilename(java.lang.String)
+	 * @see org.homedns.mkh.databuffer.AbstractDataBufferManager#getDataBufferFilename(java.lang.String)
 	 */
 	@Override
 	public String getDataBufferFilename( String sDataBufferName ) {
 		return( Context.getInstance( ).getDataBufferFilename( sDataBufferName ) );
 	}
-	
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getClientDateFormat()
-	 */
-	@Override
-	public SimpleDateFormat getClientDateFormat( ) {
-		return( cliDateFormat );
-	}
 
 	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getServerDateFormat()
+	 * Returns data buffer (if it doesn't exist try to create it and adds to the
+	 * databuffer map).
+	 * 
+	 * @param id
+	 *            the identifier object
+	 * 
+	 * @return the data buffer object or null
+	 * 
+	 * @throws Exception
 	 */
-	@Override
-	public SimpleDateFormat getServerDateFormat( ) {
-		return( srvDateFormat );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getLocale()
-	 */
-	@Override
-	public Locale getLocale( ) {
-		return( locale );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getTransObject()
-	 */
-	@Override
-	public DBTransaction getTransObject( ) {
-		return( sqlca );
+	public DataBuffer getDataBuffer( Id id ) throws Exception {
+		return super.getDataBuffer( new UID( id.getName( ), id.getUID( ) ) );
 	}
 
 	/**
@@ -207,71 +107,45 @@ public class DataBufferManager implements Environment {
 	 *            the data buffer identifier
 	 */
 	public void closeDataBuffer( Id id ) {
-		String sDataBufferName = getLocaleDBName( id.getName( ) );
-		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
-		if( dbMap != null ) {
-			DataBuffer db = dbMap.get( id.getUID( ) );
-			if( db != null ) {
-				dbMap.remove( id.getUID( ) );
-				db.close( );
-				LOG.debug( 
-					"data buffer removed: " + sDataBufferName + "-" + String.valueOf( id.getUID( ) ) 
-				);
-			}
-		}		
+		super.closeDataBuffer( new UID( id.getName( ), id.getUID( ) ) );
 	}
 	
-	/**
-	 * Returns data buffers map of the same kind
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * 
-	 * @return the data buffers map of the same kind
-	 */
-	private ConcurrentHashMap< Long, DataBuffer > get( String sDataBufferName ) {
-		return( dbs.get( sDataBufferName ) );
-	}
-
-	/**
-	 * Returns data buffer name for current locale.
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * 
-	 * @return data buffer name for current locale.
-	 */
-	private String getLocaleDBName( String sDataBufferName ) {
-		if( sDataBufferName == null || "".equals( sDataBufferName ) ) {
-			throw new IllegalArgumentException( sDataBufferName );
+	@SuppressWarnings( "serial" )
+	private class UID implements UUID {
+		private String sName;
+		private Long lUID;
+		
+		/**
+		 * @param sName the name
+		 * @param lUID the unique number
+		 */
+		public UID( String sName, Long lUID ) {
+			this.sName = sName;
+			this.lUID = lUID;
 		}
-		String sLocale = locale.getLanguage( );
-		return(
-			Util.DEFAULT_LOCALE.equals( sLocale ) || "".equals( sLocale ) ? 
-			sDataBufferName : 
-			sDataBufferName + "_" + sLocale
-		);
-	}
 
-	/**
-	 * Adds the databuffer object to the map.
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * @param lUID
-	 *            the data buffer uid
-	 * @param db
-	 *            the data buffer object to add
-	 */
-	private void putDB( String sDataBufferName, Long lUID, DataBuffer db ) {
-		ConcurrentHashMap< Long, DataBuffer > dbMap = get( sDataBufferName );
-		if( dbMap == null ) {
-			dbMap = new ConcurrentHashMap< Long, DataBuffer >( );
-			ConcurrentHashMap< Long, DataBuffer > map = dbs.putIfAbsent( sDataBufferName, dbMap );
-			if( map != null ) {
-				dbMap = map;
-			}
+		/**
+		 * @see org.homedns.mkh.databuffer.UUID#getName()
+		 */
+		@Override
+		public String getName( ) {
+			return( sName );
 		}
-		dbMap.putIfAbsent( lUID, db );
+
+		/**
+		 * @see org.homedns.mkh.databuffer.UUID#setName(java.lang.String)
+		 */
+		@Override
+		public void setName( String sName ) {
+			this.sName = sName;
+		}
+
+		/**
+		 * @see org.homedns.mkh.databuffer.UUID#getUID()
+		 */
+		@Override
+		public Long getUID( ) {
+			return( lUID );
+		}
 	}
 }

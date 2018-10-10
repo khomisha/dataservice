@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,18 +42,19 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 public abstract class Presenter implements HandlerRegistry {
 	private static final Logger LOG = Logger.getLogger( Presenter.class.getName( ) );  
 
-	private Response _response;
-	private Id _id;
-	private List< View > _viewList = new ArrayList< View >( );
-	private ViewDesc _viewDesc;
-	private ViewCache _viewCache;
-	private HandlerRegistryAdaptee _handlers;
-	private Request _request;
-	private View _newView;
-	private boolean _bRegisterLock = false;
+	private Response response;
+	private Id id;
+	private List< View > viewList = new ArrayList< View >( );
+	private ViewDesc viewDesc;
+	private ViewCache viewCache;
+	private HandlerRegistryAdaptee handlers;
+	private Request request;
+	private View newView;
+	private boolean bRegisterLock = false;
+	private static boolean bLogoutInProcess = false;
 	
 	public Presenter( ) {
-		_handlers = new HandlerRegistryAdaptee( );
+		handlers = new HandlerRegistryAdaptee( );
 	}
 	
 	/**
@@ -64,7 +65,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the presenter identification object to set
 	 */
 	public void setID( Id id ) {
-		_id = id;
+		this.id = id;
 		init( );
 	}
 
@@ -74,7 +75,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the identification object
 	 */
 	public Id getID( ) {
-		return( _id );
+		return( id );
 	}
 
 	/**
@@ -83,7 +84,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the request
 	 */
 	public Request getRequest( ) {
-		return( _request );
+		return( request );
 	}
 
 	/**
@@ -93,7 +94,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the request to set
 	 */
 	public void setRequest( Request request ) {
-		_request = request;
+		this.request = request;
 	}
 
 	/**
@@ -103,8 +104,8 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the response data to set
 	 */
 	public void setResponse( Response response ) {
-		_response = response;
-		_response.setID( _id );		//????
+		this.response = response;
+		this.response.setID( id );		//????
 	}
 
 	/**
@@ -113,7 +114,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the response data
 	 */
 	public Response getResponse( ) {
-		return( _response );
+		return( response );
 	}
 
 	/**
@@ -122,7 +123,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the presenter init flag
 	 */
 	public boolean isInit( ) {
-		return( _viewDesc != null );
+		return( viewDesc != null );
 	}
 
 	/**
@@ -133,13 +134,13 @@ public abstract class Presenter implements HandlerRegistry {
 	 */
 	public void onResponse( Response response ) {
 		if( !isInit( ) ) {
-			_viewDesc = ViewDescFactory.create( 
+			viewDesc = ViewDescFactory.create( 
 				ViewDesc.class, getDataBufferDesc( response ) 
 			);
-			_viewCache = ViewCacheFactory.create( 
-				_newView.getCacheType( ), 
-				_viewDesc, 
-				_id 
+			viewCache = ViewCacheFactory.create( 
+				newView.getCacheType( ), 
+				viewDesc, 
+				id 
 			);
 		}
 	}
@@ -150,7 +151,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the list of views
 	 */
 	public List< View > getViewList( ) {
-		return( _viewList );
+		return( viewList );
 	}
 
 	/**
@@ -159,7 +160,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the view description
 	 */
 	public ViewDesc getViewDesc( ) {
-		return( _viewDesc );
+		return( viewDesc );
 	}
 
 	/**
@@ -168,7 +169,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the view cache
 	 */
 	public ViewCache getViewCache( ) {
-		return( _viewCache );
+		return( viewCache );
 	}
 
 	/**
@@ -181,8 +182,8 @@ public abstract class Presenter implements HandlerRegistry {
 	 */
 	protected boolean add( View view ) {
 		boolean bAdd = false;
-		if( !_viewList.contains( view ) ) {
-			bAdd = _viewList.add( view );
+		if( !viewList.contains( view ) ) {
+			bAdd = viewList.add( view );
 		}
 		return( bAdd );
 	}
@@ -193,7 +194,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the view description
 	 */
 	public ViewDesc getDescription( ) {
-		return( _viewDesc );
+		return( viewDesc );
 	}
 
 	/**
@@ -203,8 +204,8 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the view to remove
 	 */
 	protected void remove( View view ) {
-		if( _viewList.contains( view ) ) {
-			_viewList.remove( view );
+		if( viewList.contains( view ) ) {
+			viewList.remove( view );
 		}		
 	}
 
@@ -213,7 +214,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 */
 	@Override
 	public void removeHandlers( ) {
-		_handlers.clear( );
+		handlers.clear( );
 	}
 
 	/**
@@ -221,7 +222,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 */
 	@Override
 	public boolean addHandler( HandlerRegistration hr ) {
-		return( _handlers.add( hr ) );		
+		return( handlers.add( hr ) );		
 	}
 
 	/**
@@ -230,7 +231,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the view register process locking flag
 	 */
 	public boolean isRegisterLock( ) {
-		return( _bRegisterLock );
+		return( bRegisterLock );
 	}
 
 	/**
@@ -241,7 +242,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the view register process locking flag to set
 	 */
 	public void setRegisterLock( boolean bRegisterLock ) {
-		_bRegisterLock = bRegisterLock;
+		this.bRegisterLock = bRegisterLock;
 	}
 
 	/**
@@ -250,7 +251,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 * @return the initiating view
 	 */
 	protected View getInitiatingView( ) {
-		return( _newView );
+		return( newView );
 	}
 
 	/**
@@ -260,7 +261,7 @@ public abstract class Presenter implements HandlerRegistry {
 	 *            the initiating view to set
 	 */
 	protected void setInitiatingView( View newView ) {
-		_newView = newView;
+		this.newView = newView;
 	}
 	
 	/**
@@ -283,5 +284,23 @@ public abstract class Presenter implements HandlerRegistry {
 			JSONParser.parseStrict( sJson )
 		);
 		return( desc );
+	}
+
+	/**
+	 * Returns logout in process flag
+	 * 
+	 * @return the logout in process flag
+	 */
+	public static boolean isLogoutInProcess( ) {
+		return( bLogoutInProcess );
+	}
+
+	/**
+	 * Sets logout in process flag
+	 * 
+	 * @param bLogoutInProcess the logout in process flag to set
+	 */
+	public static void setLogoutInProcess( boolean bLogoutInProcess ) {
+		Presenter.bLogoutInProcess = bLogoutInProcess;
 	}
 }

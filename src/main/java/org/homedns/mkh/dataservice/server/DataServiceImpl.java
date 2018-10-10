@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,9 @@
 package org.homedns.mkh.dataservice.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
 import org.apache.log4j.Logger;
-import org.homedns.mkh.databuffer.ResourceClosedException;
+import org.homedns.mkh.databuffer.DBConnectionUnavailableException;
 import org.homedns.mkh.dataservice.client.DataService;
 import org.homedns.mkh.dataservice.server.handler.RequestHandler;
 import org.homedns.mkh.dataservice.server.handler.RequestHandlerBuilder;
@@ -29,6 +30,7 @@ import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.Util;
+
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
@@ -88,7 +90,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	public Response doRPC( Request request ) {
 		Response result = null;
 		Id id = request.getID( );
-		String sMsg = ( id == null ) ? request.getHandlerClassName( ) : id.toString( );
+		String sMsg = ( id == null ) ? request.getHandlerClassName( ) : request.getHandlerClassName( ) + ": " + id.toString( );
 		LOG.debug( getClass( ).getName( ) + ": doRPC: " + sMsg );
 		try {
 			RequestHandler handler = bindHandler( request );
@@ -96,15 +98,21 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 		}
 		catch( Exception e ) {
 			result = ( result == null ) ? new GenericResponse( ) : result;
-			setFailure( result, sMsg, e );	
-			HttpSession session = getHttpServletRequest( ).getSession( false );
-			if( e instanceof ResourceClosedException && session != null ) {
-				session.invalidate( );	// ????
+			if( getDataBufferManager( ) == null ) {
+				result.setResult( Response.FAILURE );
+				sMsg = Context.getLocalizedMsg( "sessionClosed" );
+				LOG.info( sMsg );
+				result.setError( sMsg + " " + Context.getLocalizedMsg( "tryLogin" ) );				
+			} else {
+				if( e instanceof DBConnectionUnavailableException ) {
+					sMsg = e.getMessage( ) + " " + Context.getLocalizedMsg( "tryLogin" );
+				}
+				setFailure( result, sMsg, e );					
 			}
 		}
 		return( result );
 	}
-
+	
 	/**
 	 * Binds request with appropriate handler
 	 * 
@@ -200,9 +208,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 */
 	public String getSrvResourcePath( ) {
 		if( sSrvResourcePath == null || "".equals( sSrvResourcePath ) ) {
-			throw new IllegalArgumentException( 
-				Context.getBundle( getDataBufferManager( ).getLocale( ) ).getString( "noResourcePath" ) 
-			);			
+			throw new IllegalArgumentException( Context.getLocalizedMsg( "noResourcePath" ) );			
 		}
 		return( sSrvResourcePath );
 	}
@@ -246,9 +252,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 */
 	public String getDataBufferFilename( String sDataBufferName ) {
 		if( sDataBufferName == null || "".equals( sDataBufferName ) ) {
-			throw new IllegalArgumentException( 
-				Context.getBundle( getDataBufferManager( ).getLocale( ) ).getString( "noDataBufferName" ) 
-			);
+			throw new IllegalArgumentException( Context.getLocalizedMsg( "noDataBufferName" ) );
 		}
 		return( getSrvResourcePath( ) + sDataBufferName + ".dbuf" );
 	}

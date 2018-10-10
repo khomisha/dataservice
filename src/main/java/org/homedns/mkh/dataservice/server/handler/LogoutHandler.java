@@ -36,6 +36,7 @@ public class LogoutHandler extends GenericRequestHandler {
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
+//		Context.getInstance( ).getHttpServletRequest( ).getSession( false ).invalidate( );
 		LoginContext lc = Context.getInstance( ).getLoginContext( );
 		if( lc != null ) {
 			lc.logout( );

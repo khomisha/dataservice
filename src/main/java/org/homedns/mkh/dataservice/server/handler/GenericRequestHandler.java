@@ -20,6 +20,7 @@ package org.homedns.mkh.dataservice.server.handler;
 
 import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.server.Context;
+import org.homedns.mkh.dataservice.server.DataBufferManager;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 
@@ -56,9 +57,10 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	 *            the request object
 	 */
 	protected void closeDataBuffer( Request request ) {
-		Context.getInstance( ).getDataBufferManager( ).closeDataBuffer( 
-			request.getID( ) 
-		);
+		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
+		if( dbm != null ) {
+			dbm.closeDataBuffer( request.getID( ) );
+		}
 	}
 	
 	/**

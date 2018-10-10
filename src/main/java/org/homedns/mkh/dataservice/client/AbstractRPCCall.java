@@ -29,8 +29,7 @@ import org.homedns.mkh.dataservice.shared.Util;
  * 
  */
 public abstract class AbstractRPCCall {
-	private static final Logger LOG = Logger.getLogger( AbstractRPCCall.class
-			.getName( ) );
+	private static final Logger LOG = Logger.getLogger( AbstractRPCCall.class.getName( ) );
 
 	/**
 	 * Request execution debug logging
@@ -40,11 +39,9 @@ public abstract class AbstractRPCCall {
 	 */
 	protected void log( Request request ) {
 		if( request.getID( ) != null ) {
-			LOG.config( getClass( ).getName( ) + ": execute: "
-					+ request.getID( ).toString( ) );
+			LOG.config( getClass( ).getName( ) + ": execute: " + request.getID( ).toString( ) );
 		}
-		LOG.config( getClass( ).getName( ) + ": execute: "
-				+ request.getHandlerClassName( ) );
+		LOG.config( getClass( ).getName( ) + ": execute: " + request.getHandlerClassName( ) );
 	}
 
 	/**
@@ -63,18 +60,20 @@ public abstract class AbstractRPCCall {
 			Response src = ( Response )source;
 			if( src.getResult( ) == Response.FAILURE ) {
 				sMsg = Util.getCauseMsg( null );
-				sMsg = ( src == null ? sHandlerClassName + ": " + sMsg
-						: sHandlerClassName + ": " + src.getError( ) );
+				sMsg = ( 
+					src == null ? 
+					sHandlerClassName + ": " + sMsg : 
+					sHandlerClassName + ": " + src.getError( ) 
+				);
 				LOG.severe( sMsg );
 			} else {
-				if( src.getMsg( ) != null ) {
-					sMsg = src.getMsg( );
+				if( src.getReturnValueAsString( 1 ) != null ) {
+					sMsg = src.getReturnValueAsString( 1 );
 					LOG.info( sMsg );
 				}
 			}
 		} else if( source instanceof Throwable ) {
-			sMsg = sHandlerClassName + ": "
-					+ Util.getCauseMsg( ( Throwable )source );
+			sMsg = sHandlerClassName + ": " + Util.getCauseMsg( ( Throwable )source );
 			LOG.severe( sMsg );
 		}
 		return( sMsg );

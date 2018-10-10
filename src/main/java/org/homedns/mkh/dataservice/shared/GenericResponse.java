@@ -132,13 +132,13 @@ public class GenericResponse implements Response {
 	}
 
 	/**
-	 * @see org.homedns.mkh.dataservice.shared.Response#getMsg()
+	 * @see org.homedns.mkh.dataservice.shared.Response#getReturnValueAsString(int)
 	 */
-	public String getMsg( ) {
+	public String getReturnValueAsString(int iIndex ) {
 		String sValue = null;
 		ReturnValue rv = getAttribute( ReturnValue.class, RETURN_VALUE );
-		if( rv != null && rv.size( ) > 1 ) {
-			sValue = rv.get( 1 );
+		if( rv != null && iIndex < rv.size( ) ) {
+			sValue = rv.get( iIndex );
 		}
 		return( sValue );
 	}

@@ -186,11 +186,13 @@ public interface Response extends Serializable {
 	public void setDownloadFileName( String sFile );
 
 	/**
-	 * Returns dbms message
+	 * Returns specified element as string from return value
 	 * 
-	 * @return the message or null
+	 * @param iIndex the element index
+	 * 
+	 * @return the element value as string
 	 */
-	public String getMsg( );
+	public String getReturnValueAsString( int iIndex );
 
 	/**
 	 * Sets return value

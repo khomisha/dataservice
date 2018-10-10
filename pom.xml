@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.homedns.mkh</groupId>
   <artifactId>dataservice</artifactId>
-  <version>1.0.8</version>
+  <version>1.0.9</version>
 
     <name>Dataservice</name>
     <description>Framework library for building GWT applications using the MVP design pattern. On one hand it provides functionality separation, on other, easy data transfer from server to client and vice versa using GWT RPC service</description>
@@ -38,7 +38,7 @@
     <dependency>
     	<groupId>org.homedns.mkh</groupId>
     	<artifactId>databuffer</artifactId>
-    	<version>1.0.49</version>
+    	<version>1.0.50</version>
     </dependency>
     <dependency>
     	<groupId>log4j</groupId>

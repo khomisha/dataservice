@@ -18,17 +18,13 @@
 
 package org.homedns.mkh.dataservice.shared;
 
-import java.io.Serializable;
-
 /**
- * Close server paging connection request
+ * Close server paging connection response
  *
  */
-public class ClosePagingConnRequest extends GenericRequest implements Serializable {
-	private static final long serialVersionUID = -8901749736453748436L;
+public class ClosePagingConnResponse extends GenericResponse {
+	private static final long serialVersionUID = 7177959158909921161L;
 
-	public ClosePagingConnRequest( ) {
-		setHandlerClassName( "org.homedns.mkh.dataservice.server.handler.ClosePagingConnHandler" );
-		setResponseClassName( "org.homedns.mkh.dataservice.shared.ClosePagingConnResponse" );
+	public ClosePagingConnResponse( ) {
 	}
 }

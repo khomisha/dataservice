@@ -191,7 +191,9 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 	protected void remove( View view ) {
 		super.remove( view );
 		if( getViewList( ).isEmpty( ) ) {
-			execRPC( RequestFactory.create( RemoveDataBufferRequest.class ) );
+			if( !isLogoutInProcess( ) ) {
+				execRPC( RequestFactory.create( RemoveDataBufferRequest.class ) );
+			}
 		} else {
 			if( view instanceof Paging ) {
 				Paging paging = ( Paging )view;

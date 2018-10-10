@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Mikhail Khodonov
+ * Copyright 2013-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,9 +22,11 @@ import org.homedns.mkh.dataservice.client.event.MaskEvent;
 import org.homedns.mkh.dataservice.client.event.RPCResponseEvent;
 import org.homedns.mkh.dataservice.client.event.UnmaskEvent;
 import org.homedns.mkh.dataservice.client.presenter.Presenter;
+import org.homedns.mkh.dataservice.shared.ClosePagingConnResponse;
 import org.homedns.mkh.dataservice.shared.GenericResponse;
 import org.homedns.mkh.dataservice.shared.LoginResponse;
 import org.homedns.mkh.dataservice.shared.LogoutResponse;
+import org.homedns.mkh.dataservice.shared.RemoveDataBufferResponse;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -74,7 +76,14 @@ public class RPCCall extends AbstractRPCCall{
 			Response response = new GenericResponse( );
 			response.setResult( Response.FAILURE );
 			response.setError( sErr );
-			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
+			if( 
+				!( 
+					response instanceof LogoutResponse || 
+					response instanceof LoginResponse  ||
+					response instanceof RemoveDataBufferResponse  ||
+					response instanceof ClosePagingConnResponse 
+				) 
+			) {
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
 			signalMsg( caught, sErr );
@@ -95,7 +104,14 @@ public class RPCCall extends AbstractRPCCall{
 					signalMsg( null, sMsg );						
 				}
 			}
-			if( !( response instanceof LogoutResponse ) && !( response instanceof LoginResponse ) ) {
+			if( 
+				!( 
+					response instanceof LogoutResponse || 
+					response instanceof LoginResponse  ||
+					response instanceof RemoveDataBufferResponse  ||
+					response instanceof ClosePagingConnResponse 
+				) 
+			) {
 				RPCResponseEvent.fire( presenter.getID( ), response );
 			}
 		}

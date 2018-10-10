@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2014-2018 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@
 
 package org.homedns.mkh.dataservice.server.handler;
 
-import org.homedns.mkh.dataservice.server.Context;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 
@@ -35,7 +34,7 @@ public class RemoveDataBufferHandler extends GenericRequestHandler {
 	 */
 	@Override
 	public Response execute( Request request ) throws Exception {
-		Context.getInstance( ).getDataBufferManager( ).closeDataBuffer( request.getID( ) );
+		closeDataBuffer( request );
 		Response response = createResponse( request );
 		response.setResult( Response.SUCCESS );
 		return( response );
