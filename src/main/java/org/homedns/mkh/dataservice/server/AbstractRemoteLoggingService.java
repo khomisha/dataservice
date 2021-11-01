@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Mikhail Khodonov
+ * Copyright 2014-2021 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.servlet.ServletException;
 import org.apache.log4j.Logger;
-import com.google.gwt.logging.server.StackTraceDeobfuscator;
+import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.logging.shared.RemoteLoggingService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -58,7 +58,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet implements RemoteLoggingService {
 	private static final Logger LOG = Logger.getLogger( AbstractRemoteLoggingService.class );
 
-	private StackTraceDeobfuscator _deobfuscator;
+	private StackTraceDeobfuscator deobfuscator;
 	
 	/**
 	 * @see javax.servlet.GenericServlet#init()
@@ -68,7 +68,7 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 		super.init( );
 		try {
 			String sPath = getServletContext( ).getResource( "/" ).getPath( ) + getSymbolMapPath( );
-			setDeobfuscator( new StackTraceDeobfuscator( sPath, true ) );
+			setDeobfuscator( StackTraceDeobfuscator.fromResource( sPath ) );
 			LOG.debug( "symbol maps path: " + sPath );
 		}
 		catch( Exception e ) {
@@ -86,13 +86,9 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 		try { 
 			Throwable t = record.getThrown( );
 			if( t != null ) {
-				StackTraceElement[] sts = _deobfuscator.deobfuscateStackTrace( 
-					t.getStackTrace( ), getPermutationStrongName( ) 
-				);
+				StackTraceElement[] sts = deobfuscator.resymbolize( t.getStackTrace( ), getPermutationStrongName( ) );
 				t.setStackTrace( sts );  
-				t = _deobfuscator.deobfuscateThrowable( 
-					t, getPermutationStrongName( ) 
-				);
+				deobfuscator.deobfuscateStackTrace( t, getPermutationStrongName( ) );
 			}
 			logData( 
 				record.getLevel( ), 
@@ -114,7 +110,7 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 	 * @return the deobfuscator
 	 */
 	public StackTraceDeobfuscator getDeobfuscator( ) {
-		return( _deobfuscator );
+		return( deobfuscator );
 	}
 
 	/**
@@ -124,7 +120,7 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 	 *            the deobfuscator to set
 	 */
 	public void setDeobfuscator( StackTraceDeobfuscator deobfuscator ) {
-		_deobfuscator = deobfuscator;
+		this.deobfuscator = deobfuscator;
 	}
 
 	/**

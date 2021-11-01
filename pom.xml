@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.homedns.mkh</groupId>
   <artifactId>dataservice</artifactId>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
 
     <name>Dataservice</name>
     <description>Framework library for building GWT applications using the MVP design pattern. On one hand it provides functionality separation, on other, easy data transfer from server to client and vice versa using GWT RPC service</description>
@@ -18,7 +18,7 @@
 
   <properties>
     <!-- Convenience property to set the GWT version -->
-    <gwtVersion>2.5.1</gwtVersion>
+    <gwtVersion>2.8.1</gwtVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -79,8 +79,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
 		<plugin>
