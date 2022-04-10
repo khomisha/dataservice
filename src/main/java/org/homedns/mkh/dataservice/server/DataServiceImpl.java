@@ -49,9 +49,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	private static final Logger LOG = Logger.getLogger( DataServiceImpl.class );
 	
 	private Properties properties;
-	private ConcurrentHashMap< Class< ? >, RequestHandler > handlers = (
-		new ConcurrentHashMap< Class< ? >, RequestHandler >( )
-	);
+	private ConcurrentHashMap< Class< ? >, RequestHandler > handlers = new ConcurrentHashMap< >( );
 	private String sSrvResourcePath;
 	private String sRealContextPath;
 	
@@ -62,7 +60,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	   		logInfo( );
 		}
 		catch( Exception e ) {
-			LOG.error( e.getMessage( ) );
+			LOG.error( e.getMessage( ), e );
 		}
 	}
 
@@ -88,15 +86,18 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @see org.homedns.mkh.dataservice.client.DataService#doRPC(org.homedns.mkh.dataservice.shared.Request)
 	 */
 	public Response doRPC( Request request ) {
+		LOG.debug( "get request: " + request.getID( ) );
 		Response result = null;
-		Id id = request.getID( );
-		String sMsg = ( id == null ) ? request.getHandlerClassName( ) : request.getHandlerClassName( ) + ": " + id.toString( );
-		LOG.debug( getClass( ).getName( ) + ": doRPC: " + sMsg );
+		String sMsg = null;
 		try {
+			Id id = request.getID( );
+			sMsg = ( id == null ) ? request.getHandlerClassName( ) : request.getHandlerClassName( ) + ": " + id.toString( );
+			LOG.debug( "doRPC: " + sMsg );
 			RequestHandler handler = bindHandler( request );
 			result =  handler.execute( request );
 		}
 		catch( Exception e ) {
+			LOG.debug( e.getMessage( ), e );
 			result = ( result == null ) ? new GenericResponse( ) : result;
 			if( getDataBufferManager( ) == null ) {
 				result.setResult( Response.FAILURE );
@@ -121,13 +122,9 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * 
 	 * @return the request handler
 	 * 
-	 * @throws ClassNotFoundException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
+	 * @throws Exception
 	 */
-	protected RequestHandler bindHandler( 
-		Request request 
-	) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	protected RequestHandler bindHandler( Request request ) throws Exception {
 		RequestHandler handler = handlers.get( request.getClass( ) );
 		if( handler == null ) {
 			handler = RequestHandlerBuilder.build( request );
@@ -229,7 +226,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * @return the servlet context real path
 	 */
 	public String getRealContextPath( ) {
-		return sRealContextPath;
+		return( sRealContextPath );
 	}
 
 	/**
@@ -322,6 +319,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	protected void loadProperties( String sPropertyFilename ) throws IOException {
 		Parameters params = new Parameters( sPropertyFilename );
 		properties = params.getParameters( );
+		LOG.debug( properties );
 	}
 	
 	/**

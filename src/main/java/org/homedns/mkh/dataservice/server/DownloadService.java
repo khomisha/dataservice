@@ -115,6 +115,7 @@ public abstract class DownloadService extends HttpServlet {
 			int iCount;
 			while( ( iCount = input.read( ab, 0, _iBuffSize ) ) >= 0 ) {
 				out.write( ab, 0, iCount );
+				ab = new byte[ _iBuffSize ];
 			}
 		}
 		finally {

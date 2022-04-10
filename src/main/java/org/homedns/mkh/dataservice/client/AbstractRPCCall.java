@@ -39,9 +39,9 @@ public abstract class AbstractRPCCall {
 	 */
 	protected void log( Request request ) {
 		if( request.getID( ) != null ) {
-			LOG.config( getClass( ).getName( ) + ": execute: " + request.getID( ).toString( ) );
+			LOG.config( LOG.getName( ) + ": execute: " + request.getID( ).toString( ) );
 		}
-		LOG.config( getClass( ).getName( ) + ": execute: " + request.getHandlerClassName( ) );
+		LOG.config( LOG.getName( ) + ": execute: " + request.getHandlerClassName( ) );
 	}
 
 	/**

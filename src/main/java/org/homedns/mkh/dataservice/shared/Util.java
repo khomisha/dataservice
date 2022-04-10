@@ -18,6 +18,8 @@
 
 package org.homedns.mkh.dataservice.shared;
 
+import java.util.Random;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.user.client.Window;
@@ -52,6 +54,7 @@ public class Util {
 	public static final String CR 				= "\r";
 
 	private static long _lUID = System.currentTimeMillis( );
+	private static final String CHARS = "0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,!,?,_,@,#,$,%,&,*,(,),-,+,=,1,2,3,4,5,6,7,8,9,0";
 	
 	/**
 	 * Builds a string of the specified length by repeating the specified
@@ -234,6 +237,26 @@ public class Util {
 			}
 		}
 		return( sMsg );
+	}
+	
+	/**
+	 * Returns random string of the specified length
+	 * 
+	 * @param iLength the length
+	 *  
+	 * @return random string
+	 */
+	public static String getRandomString( int iLength ) {
+		String[] as = CHARS.split( "," );
+		if( iLength <= 0 ) {
+			return( null );
+		}
+		StringBuffer sb = new StringBuffer( );
+		Random random = new Random( );
+		for( int iIndex = 0; iIndex < iLength; iIndex++ ) {
+			sb.append( as[ random.nextInt( as.length ) ] );
+		}
+		return( sb.toString( ) );
 	}
 }
 

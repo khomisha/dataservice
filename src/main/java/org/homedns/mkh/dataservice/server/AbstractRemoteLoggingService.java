@@ -83,6 +83,7 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 	 */
 	@Override
 	public String logOnServer( LogRecord record ) {
+		String sError = null;
 		try { 
 			Throwable t = record.getThrown( );
 			if( t != null ) {
@@ -90,18 +91,13 @@ public abstract class AbstractRemoteLoggingService extends RemoteServiceServlet 
 				t.setStackTrace( sts );  
 				deobfuscator.deobfuscateStackTrace( t, getPermutationStrongName( ) );
 			}
-			logData( 
-				record.getLevel( ), 
-				getThreadLocalRequest( ).getRemoteAddr( ) + ": " + record.getMessage( ), 
-				t 
-			);
+			logData( record.getLevel( ), getThreadLocalRequest( ).getRemoteAddr( ) + ": " + record.getMessage( ), t );
 		}
 		catch( Exception e ) {
-			String sErr = Context.getLocalizedMsg( "loggingFailed" );
-			LOG.fatal( sErr, e );
-			return( sErr );
+			sError = Context.getLocalizedMsg( "loggingFailed" );
+			LOG.fatal( sError, e );
 		}
-		return( null );
+		return( sError );
 	}
 	
 	/**

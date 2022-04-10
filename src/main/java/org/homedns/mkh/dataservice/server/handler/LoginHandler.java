@@ -19,7 +19,6 @@
 package org.homedns.mkh.dataservice.server.handler;
 
 import java.util.Set;
-import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
 import org.homedns.mkh.databuffer.DataBuffer;
@@ -69,9 +68,10 @@ public class LoginHandler extends GenericRequestHandler {
 			response.setData( db.getData( ) );
 			response.setResult( Response.SUCCESS );
 		}
-		catch( FailedLoginException e ) {
+		catch( Exception e ) {
 			response.setResult( Response.FAILURE );
 			response.setError( e.getMessage( ) );
+			LOG.debug( e.getMessage( ), e );
 		}
 		return( response );
 	}

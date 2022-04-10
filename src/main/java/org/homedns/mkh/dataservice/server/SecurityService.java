@@ -161,6 +161,7 @@ public class SecurityService implements LoginModule {
 			}
         }
         catch( Exception che ) {
+        	LOG.debug( che.getMessage( ), che );
         	LoginException le = new LoginException( );
         	le.initCause( che );
         	throw le;
@@ -210,6 +211,7 @@ public class SecurityService implements LoginModule {
 			subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, id ) );
 		}
 		catch( Exception e ) {
+        	LOG.debug( e.getMessage( ), e );
 			if( dbm != null ) {
 				dbm.close( );
 			}
@@ -242,6 +244,7 @@ public class SecurityService implements LoginModule {
 				dbm.close( );
 			}
 		} catch( Exception e ) {
+        	LOG.debug( e.getMessage( ), e );
         	LoginException le = new LoginException( );
         	le.initCause( e );
         	throw le;
