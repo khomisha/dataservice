@@ -20,7 +20,8 @@ package org.homedns.mkh.dataservice.server;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-import org.homedns.mkh.databuffer.Util;
+
+import org.homedns.mkh.util.Util;
 
 /**
  * Application context object

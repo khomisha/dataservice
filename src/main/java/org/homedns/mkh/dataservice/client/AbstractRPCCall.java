@@ -69,12 +69,12 @@ public abstract class AbstractRPCCall {
 			} else {
 				if( src.getReturnValueAsString( 1 ) != null ) {
 					sMsg = src.getReturnValueAsString( 1 );
-					LOG.info( sMsg );
+					LOG.info( LOG.getName( ) + ": " + sMsg );
 				}
 			}
 		} else if( source instanceof Throwable ) {
 			sMsg = sHandlerClassName + ": " + Util.getCauseMsg( ( Throwable )source );
-			LOG.severe( sMsg );
+			LOG.severe( LOG.getName( ) + ": " + sMsg );
 		}
 		return( sMsg );
 	}

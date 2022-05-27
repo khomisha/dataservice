@@ -18,9 +18,9 @@
 
 package org.homedns.mkh.dataservice.server.handler;
 
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBuffer;
 import org.homedns.mkh.dataservice.server.Context;
-import org.homedns.mkh.dataservice.server.DataBufferManager;
+import org.homedns.mkh.dataservice.server.DBManager;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 
@@ -44,10 +44,8 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	 * @throws Exception
 	 */
 	protected DataBuffer getDataBuffer( Request request ) throws Exception {
-		DataBuffer db = Context.getInstance( ).getDataBufferManager( ).getDataBuffer( 
-			request.getID( ) 
-		);
-		return( db );
+		DBManager dbm = ( DBManager )Context.getInstance( ).getDataBufferManager( );
+		return( dbm.getDataBuffer( request.getID( ) ) );
 	}
 	
 	/**
@@ -55,12 +53,12 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	 * 
 	 * @param request
 	 *            the request object
+	 *            
+	 * @throws Exception 
 	 */
-	protected void closeDataBuffer( Request request ) {
-		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
-		if( dbm != null ) {
-			dbm.closeDataBuffer( request.getID( ) );
-		}
+	protected void closeDataBuffer( Request request ) throws Exception {
+		DBManager dbm = ( DBManager )Context.getInstance( ).getDataBufferManager( );
+		dbm.closeDataBuffer( request.getID( ) );
 	}
 	
 	/**
@@ -70,13 +68,9 @@ public abstract class GenericRequestHandler implements RequestHandler {
 	 *            the request
 	 * @return the response
 	 * 
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws ClassNotFoundException
+	 * @throws Exception
 	 */
-	protected Response createResponse( 
-		Request request 
-	) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	protected Response createResponse( Request request ) throws Exception {
 		Class< ? > clazz = Class.forName( request.getResponseClassName( ) );
 		Response response = ( Response )clazz.newInstance( );
 		if( request.getID( ) != null ) {

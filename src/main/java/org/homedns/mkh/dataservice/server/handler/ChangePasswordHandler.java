@@ -19,9 +19,9 @@
 package org.homedns.mkh.dataservice.server.handler;
 
 import java.io.Serializable;
-import org.homedns.mkh.databuffer.DataBuffer;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
+import org.homedns.mkh.databuffer.api.DataBuffer;
 import org.homedns.mkh.dataservice.shared.ChangePasswordRequest;
 
 /**

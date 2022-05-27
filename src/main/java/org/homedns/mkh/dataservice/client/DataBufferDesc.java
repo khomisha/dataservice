@@ -34,7 +34,7 @@ public class DataBufferDesc {
 	private String title;
 	private Table table;
 	private Column[] columns;
-	private String[] colsNames;
+	private String[] colNames;
 	
 	public DataBufferDesc( ) {
 	}
@@ -134,7 +134,7 @@ public class DataBufferDesc {
 	 * @return the column index
 	 */
 	public int getColIndex( String sColName ) {
-		List< String > colList = Arrays.asList( colsNames );
+		List< String > colList = Arrays.asList( colNames );
 		int iIndex = colList.indexOf( sColName );
 		if( iIndex == -1 ) {
 			throw new IllegalArgumentException( "no " + sColName );
@@ -147,8 +147,8 @@ public class DataBufferDesc {
 	 * 
 	 * @return the column names array
 	 */
-	public String[] getColsNames( ) {
-		return colsNames;
+	public String[] getColNames( ) {
+		return colNames;
 	}
 
 	/**
@@ -157,8 +157,8 @@ public class DataBufferDesc {
 	 * @param colsNames
 	 *            the column names array to set
 	 */
-	public void setColsNames( String[] colsNames ) {
-		this.colsNames = colsNames;
+	public void setColNames( String[] colNames ) {
+		this.colNames = colNames;
 	}
 }
 

@@ -19,6 +19,7 @@
 package org.homedns.mkh.dataservice.shared;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Generic RPC call response object
@@ -40,11 +41,10 @@ public class GenericResponse implements Response {
 
 	@SuppressWarnings( "unused" )
 	private String[][] dummy;
-	private AttributeMap< Integer, Serializable > _attributes = (
-		new AttributeMap< Integer, Serializable >( )
-	);
+	private AttributeMap< Integer, Serializable > attributes;
 
 	public GenericResponse( ) {
+		attributes = new AttributeMap< >( );
 		setServerPaging( false );
 		setRowCount( 0 );
 	}
@@ -230,7 +230,7 @@ public class GenericResponse implements Response {
 	*/
 	@SuppressWarnings("unchecked")
 	protected < T extends Serializable > T getAttribute( Class< T > type, Integer iKey ) {
-		Serializable value = _attributes.getAttribute( iKey );
+		Serializable value = attributes.getAttribute( iKey );
 		if( value == null ) {
 			return( null );
 		}
@@ -248,6 +248,18 @@ public class GenericResponse implements Response {
 	 * @param value the attribute value
 	 */
 	protected void setAttribute( Integer iKey, Serializable value ) {
-		_attributes.setAttribute( iKey, value );
+		attributes.setAttribute( iKey, value );
 	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString( ) {
+		return "GenericResponse [getData()="
+			+ Arrays.toString( getData( ) ) + ", getJsonData()=" + getJsonData( ) + ", getDataBufferDesc()="
+			+ getDataBufferDesc( ) + ", getResult()=" + getResult( ) + ", getPKValue()=" + getPKValue( )
+			+ ", getError()=" + getError( ) + ", getID()=" + getID( ) + "]";
+	}
+
 }

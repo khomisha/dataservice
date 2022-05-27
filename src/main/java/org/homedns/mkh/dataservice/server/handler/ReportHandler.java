@@ -21,9 +21,9 @@ package org.homedns.mkh.dataservice.server.handler;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBufferManager;
 import org.homedns.mkh.dataservice.server.Context;
-import org.homedns.mkh.dataservice.server.DataBufferManager;
 import org.homedns.mkh.dataservice.server.report.Excel;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
@@ -48,7 +48,7 @@ public class ReportHandler extends GenericRequestHandler {
 		ReportRequest reportRequest = ( ReportRequest )request;
 		List< Serializable > args = new ArrayList< Serializable >( );
 		args.add( reportRequest.getDataBufferName( ) );
-		DataBuffer db = dbm.getReportDataBuffer( reportRequest.getDataBufferName( ) );
+		DataBuffer db = dbm.getDataBuffer( reportRequest.getDataBufferName( ) );
 		int iResult;
 		if( reportRequest.getArgs( ) == null || reportRequest.getArgs( ).isEmpty( ) ) {	
 			iResult = db.retrieve( );
@@ -58,9 +58,12 @@ public class ReportHandler extends GenericRequestHandler {
 		}
 		Response response = createResponse( request );
 //		response.setID( request.getID( ) );
-		String sFile = db.getEnvironment( ).getDataBufferFilename( db.getDataBufferName( ) );
-		String sTemplate = sFile.replaceFirst( ".dbuf", "_template.xls" );
-		Excel excel = new Excel( sTemplate, db );
+		String sFile = (
+			( DataBufferManager.DEFAULT_LOCALE.equals( dbm.getLocale( ) ) ) ? 
+			db.getDataBufferName( ) + "_template.xls" : 
+			db.getDataBufferName( ) + "_" + dbm.getLocale( ).getLanguage( ) + "_template.xls"
+		);
+		Excel excel = new Excel( sFile, db );
 		response.setDownloadFileName( excel.getExcelFile( ) );
 		response.setResult( iResult );
 		return( response );

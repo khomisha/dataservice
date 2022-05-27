@@ -38,8 +38,6 @@ public class BaseRequestCreator implements RequestCreator {
 			request = new ClosePagingConnRequest( );
 		} else if( type == DeleteRequest.class ) {
 			request = new DeleteRequest( );
-		} else if( type == GetDataBufferDescRequest.class ) {
-			request = new GetDataBufferDescRequest( );
 		} else if( type == InsertRequest.class ) {
 			request = new InsertRequest( );
 		} else if( type == LoadPageRequest.class ) {

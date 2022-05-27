@@ -49,7 +49,8 @@ public abstract class AbstractEntryPoint implements EntryPoint {
 		GWT.setUncaughtExceptionHandler(
 			new GWT.UncaughtExceptionHandler( ) {  
 				public void onUncaughtException( Throwable e ) {  
-					LOG.log( Level.SEVERE, "UncaughtException", Util.unwrap( e ) );  
+					e.printStackTrace( );
+					LOG.log( Level.SEVERE, "UncaughtException", Util.unwrap( e ) );
 			    }
 			}
 		);

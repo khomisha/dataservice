@@ -22,6 +22,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import org.apache.log4j.Logger;
 import org.homedns.mkh.databuffer.DBConnectionUnavailableException;
+import org.homedns.mkh.databuffer.api.DataBufferManager;
 import org.homedns.mkh.dataservice.client.DataService;
 import org.homedns.mkh.dataservice.server.handler.RequestHandler;
 import org.homedns.mkh.dataservice.server.handler.RequestHandlerBuilder;
@@ -30,8 +31,11 @@ import org.homedns.mkh.dataservice.shared.Id;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;
 import org.homedns.mkh.dataservice.shared.Util;
+import org.homedns.mkh.util.Parameters;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,8 +54,7 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	
 	private Properties properties;
 	private ConcurrentHashMap< Class< ? >, RequestHandler > handlers = new ConcurrentHashMap< >( );
-	private String sSrvResourcePath;
-	private String sRealContextPath;
+	private Path resourceFullPath;
 	
 	public DataServiceImpl( ) {
 		try {
@@ -71,9 +74,8 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	public void init( ) throws ServletException {
 		super.init( );
 		try {
-			setRealContextPath( getServletContext( ).getResource( "/" ).getPath( ) );
-			setSrvResourcePath( getRealContextPath( ) + getResourcePath( ) );
-			LOG.debug( "resource path: " + getRealContextPath( ) + getResourcePath( ) );
+			resourceFullPath = Paths.get( getServletContext( ).getResource( "/" ).getPath( ), getResourcePath( ).toString( ) );
+			LOG.debug( "resource path: " + resourceFullPath.toString( ) );
 		}
 		catch( Exception e ) {
 			ServletException se = new ServletException( );
@@ -199,61 +201,17 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	}
 
 	/**
-	 * Returns server resource path
+	 * Returns full resource path
 	 * 
-	 * @return the server resource path
+	 * @return the full resource path
 	 */
-	public String getSrvResourcePath( ) {
-		if( sSrvResourcePath == null || "".equals( sSrvResourcePath ) ) {
+	public Path getFullResourcePath( ) {
+		if( resourceFullPath == null ) {
 			throw new IllegalArgumentException( Context.getLocalizedMsg( "noResourcePath" ) );			
 		}
-		return( sSrvResourcePath );
+		return( resourceFullPath );
 	}
 
-	/**
-	 * Sets server resource path
-	 * 
-	 * @param sSrvResourcePath
-	 *            the server resource path to set
-	 */
-	public void setSrvResourcePath( String sSrvResourcePath ) {
-		this.sSrvResourcePath = sSrvResourcePath;
-	}
-
-	/**
-	 * Returns servlet context real path
-	 * 
-	 * @return the servlet context real path
-	 */
-	public String getRealContextPath( ) {
-		return( sRealContextPath );
-	}
-
-	/**
-	 * Sets servlet context real path
-	 * 
-	 * @param sRealContextPath
-	 *            the servlet context real path to set
-	 */
-	public void setRealContextPath( String sRealContextPath ) {
-		this.sRealContextPath = sRealContextPath;
-	}
-
-	/**
-	 * Returns data buffer description filename
-	 * 
-	 * @param sDataBufferName
-	 *            the data buffer name
-	 * 
-	 * @return the data buffer description filename
-	 */
-	public String getDataBufferFilename( String sDataBufferName ) {
-		if( sDataBufferName == null || "".equals( sDataBufferName ) ) {
-			throw new IllegalArgumentException( Context.getLocalizedMsg( "noDataBufferName" ) );
-		}
-		return( getSrvResourcePath( ) + sDataBufferName + ".dbuf" );
-	}
-	
 	/**
 	 * Returns request client IP
 	 * 
@@ -316,8 +274,8 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	 * 
 	 * @throws IOException
 	 */
-	protected void loadProperties( String sPropertyFilename ) throws IOException {
-		Parameters params = new Parameters( sPropertyFilename );
+	protected void loadProperties( Path path ) throws IOException {
+		Parameters params = new Parameters( path );
 		properties = params.getParameters( );
 		LOG.debug( properties );
 	}
@@ -329,11 +287,11 @@ public class DataServiceImpl extends RemoteServiceServlet implements DataService
 	}
 
 	/**
-	 * Returns server's resource path, must override in descendant
+	 * Returns the resource path relative to the root of the web application, must override in descendant
 	 * 
-	 * @return server's resource path
+	 * @return the relative resource path
 	 */
-	protected String getResourcePath( ) {
+	protected Path getResourcePath( ) {
 		return( null );
 	}
 }

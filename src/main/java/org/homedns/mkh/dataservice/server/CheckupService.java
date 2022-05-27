@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Khodonov
+ * Copyright 2013-2022 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,11 +19,10 @@
 package org.homedns.mkh.dataservice.server;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 import java.util.Map;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
+
+import org.homedns.mkh.databuffer.api.DataBufferManager;
 
 /**
  * Checkup service validates user and checks login attempt count
@@ -69,22 +68,13 @@ public interface CheckupService {
 	 * 
 	 * @param options
 	 *            the login options
-	 * @param dataSource
-	 *            the data source
-	 * @param locale
-	 *            the current locale
-	 * @param dateFormat
-	 *            the date format
+	 * @param dbm
+	 *            the data buffer manager
 	 * 
 	 * @throws NamingException
 	 * @throws SQLException
 	 */
-	public void init( 
-		Map< String, ? > options, 
-		DataSource dataSource,
-		Locale locale, 
-		SimpleDateFormat dateFormat 
-	) throws NamingException, SQLException;
+	public void init( Map< String, ? > options, DataBufferManager dbm ) throws NamingException, SQLException;
 
 	/**
 	 * Returns login options.
@@ -95,8 +85,13 @@ public interface CheckupService {
 	
 	/**
 	 * Closes service and saves login attempts count.
-	 * 
-	 * @throws SQLException
 	 */
 	public void close( );
+	
+	/**
+	 * Returns data buffer manager
+	 * 
+	 * @return the data buffer manager
+	 */
+	public DataBufferManager getDataBufferManager( );
 }

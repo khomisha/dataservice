@@ -21,7 +21,7 @@ package org.homedns.mkh.dataservice.server.handler;
 import java.util.Set;
 import javax.security.auth.login.LoginContext;
 import org.apache.log4j.Logger;
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBuffer;
 import org.homedns.mkh.dataservice.server.AccessRightsPrincipal;
 import org.homedns.mkh.dataservice.server.Context;
 import org.homedns.mkh.dataservice.server.LoginCallbackHandler;
@@ -71,7 +71,7 @@ public class LoginHandler extends GenericRequestHandler {
 		catch( Exception e ) {
 			response.setResult( Response.FAILURE );
 			response.setError( e.getMessage( ) );
-			LOG.debug( e.getMessage( ), e );
+			LOG.error( e.getMessage( ), e );
 		}
 		return( response );
 	}

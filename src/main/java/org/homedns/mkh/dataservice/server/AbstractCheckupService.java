@@ -19,33 +19,25 @@
 package org.homedns.mkh.dataservice.server;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Map;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 import org.apache.log4j.Logger;
-import org.homedns.mkh.databuffer.DBTransaction;
-import org.homedns.mkh.databuffer.DataBuffer;
-import org.homedns.mkh.databuffer.DataBufferMetaData;
-import org.homedns.mkh.databuffer.Environment;
+import org.homedns.mkh.databuffer.api.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBufferManager;
 import java.io.Serializable;
 
 /**
  * Abstract checkup service implementation
  *
  */
-public abstract class AbstractCheckupService implements CheckupService, Environment {
+public abstract class AbstractCheckupService implements CheckupService {
 	private static final Logger LOG = Logger.getLogger( AbstractCheckupService.class );
 
-	private Map< String, ? > _options;
-	private int _iThreshold;
-	private int _iLoginCount = 0;
-	private DBTransaction _sqlca;
-	private SimpleDateFormat _dateClientFormat;
-	private SimpleDateFormat _dateServerFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-	private Locale _locale;
+	private Map< String, ? > options;
+	private int iThreshold;
+	private int iLoginCount;
+	private DataBufferManager dbm;
 
 	public AbstractCheckupService( ) { 
 	}
@@ -55,7 +47,7 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public boolean isLocked( ) {		
-		return( _iThreshold > 0 && _iLoginCount > _iThreshold );
+		return( iThreshold > 0 && iLoginCount > iThreshold );
 	}
 
 	/**
@@ -63,8 +55,8 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public void incrementCount( ) {
-		if( _iThreshold > 0 ) {
-			_iLoginCount++;
+		if( iThreshold > 0 ) {
+			iLoginCount++;
 		}
 	}
 
@@ -73,8 +65,8 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public void resetCount( ) {
-		if( _iThreshold > 0 ) {
-			_iLoginCount = 0;
+		if( iThreshold > 0 ) {
+			iLoginCount = 0;
 		}
 	}
 
@@ -83,20 +75,16 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public boolean isValidUser( String sLogin, String sPassword ) throws Exception {
-		DataBuffer db = null;
 		int iRowCount = 0;
-		try {
-			// see also acr_user_login.dbuf for example
-			db = new DataBuffer( 
-				new DataBufferMetaData( ( String )_options.get( "login_db" ), this ) 
-			);
+		// see also acr_user_login.dbuf for example
+		try( 
+			DataBuffer db = dbm.getDataBuffer( 
+				( String )options.get( "login_db" ), 
+				( String )options.get( "jdbc_login_resource_name" ) 
+			) 
+		) {
 			iRowCount = db.retrieve( Arrays.asList( new Serializable[] { sPassword, sLogin } ) );
 			LOG.debug( "user: " + sLogin + " login success: " + String.valueOf( iRowCount > 0 ) );
-		}
-		finally {
-			if( db != null ) {
-				db.close( );
-			}
 		}
 		return( iRowCount > 0 );
 	}
@@ -105,20 +93,19 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 * @see org.homedns.mkh.dataservice.server.CheckupService#init(java.util.Map, javax.sql.DataSource, java.util.Locale, java.text.SimpleDateFormat)
 	 */
 	@Override
-	public void init( 
-		Map< String, ? > options, 
-		DataSource dataSource, 
-		Locale locale, 
-		SimpleDateFormat dateClientFormat 
-	) throws NamingException, SQLException {
-		_options = options;
-		_iThreshold = Integer.valueOf( ( String )options.get( "attempt_threshold" ) );
-		_sqlca = new DBTransaction( dataSource );
-		_locale = locale;
-		_dateClientFormat = dateClientFormat;
-		if( _iThreshold > 0 ) {
-			_iLoginCount = retrieveLoginCount( );
-		}
+	public void init( Map< String, ? > options, DataBufferManager dbm ) throws NamingException, SQLException {
+		this.options = options;
+		this.dbm = dbm;
+		iThreshold = Integer.valueOf( ( String )options.get( "attempt_threshold" ) );
+		iLoginCount = ( iThreshold > 0 ) ? retrieveLoginCount( ) : 0;
+	}
+
+	/**
+	 * @see org.homedns.mkh.dataservice.server.CheckupService#getDataBufferManager()
+	 */
+	@Override
+	public DataBufferManager getDataBufferManager( ) {
+		return( dbm );
 	}
 
 	/**
@@ -126,7 +113,7 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public Map< String, ? > getOptions( ) {
-		return( _options );
+		return( options );
 	}
 
 	/**
@@ -134,46 +121,6 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 */
 	@Override
 	public abstract void close( );
-	
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getClientDateFormat()
-	 */
-	@Override
-	public SimpleDateFormat getClientDateFormat( ) {
-		return( _dateClientFormat );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getServerDateFormat()
-	 */
-	@Override
-	public SimpleDateFormat getServerDateFormat( ) {
-		return( _dateServerFormat );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getTransObject()
-	 */
-	@Override
-	public DBTransaction getTransObject( ) {
-		return( _sqlca );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getDataBufferFilename(java.lang.String)
-	 */
-	@Override
-	public String getDataBufferFilename( String sDataBufferName ) {
-		return( Context.getInstance( ).getDataBufferFilename( sDataBufferName ) );
-	}
-
-	/**
-	 * @see org.homedns.mkh.databuffer.Environment#getLocale()
-	 */
-	@Override
-	public Locale getLocale( ) {
-		return( _locale );
-	}
 
 	/**
 	 * Returns login count
@@ -181,7 +128,7 @@ public abstract class AbstractCheckupService implements CheckupService, Environm
 	 * @return the login count
 	 */
 	public int getLoginCount( ) {
-		return( _iLoginCount );
+		return( iLoginCount );
 	}
 
 	/**

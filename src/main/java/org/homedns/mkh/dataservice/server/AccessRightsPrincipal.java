@@ -19,7 +19,7 @@
 package org.homedns.mkh.dataservice.server;
 
 import java.security.Principal;
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBuffer;
 import org.homedns.mkh.dataservice.shared.Id;
 
 /**

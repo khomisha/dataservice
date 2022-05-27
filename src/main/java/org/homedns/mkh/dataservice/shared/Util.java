@@ -29,10 +29,6 @@ import com.google.gwt.user.client.Window;
  */
 public class Util {
 	/**
-	 * default locale 'en'
-	 */
-	public static final String DEFAULT_LOCALE   = "en"; 
-	/**
 	 * "standard" output stream
 	 */
 	public static final int CONSOLE 			= 0;
@@ -44,16 +40,8 @@ public class Util {
 	 * GWT hosted mode log
 	 */
 	public static final int HOST_MODE_LOG 		= 2;
-	/**
-	 * line feed
-	 */
-	public static final String LF 				= "\n";
-	/**
-	 * carriage return
-	 */
-	public static final String CR 				= "\r";
 
-	private static long _lUID = System.currentTimeMillis( );
+	private static long lUID = System.currentTimeMillis( );
 	private static final String CHARS = "0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,!,?,_,@,#,$,%,&,*,(,),-,+,=,1,2,3,4,5,6,7,8,9,0";
 	
 	/**
@@ -88,26 +76,6 @@ public class Util {
 			}
 		}
 		return( sb.toString( ) );
-	}
-
-	/**
-	 * Returns true if input string represents number otherwise returns false.
-	 * 
-	 * @param s
-	 *            input string
-	 * 
-	 * @return true if the string is a number; false otherwise.
-	 */
-	public static boolean isNumber( String s ) {
-		boolean bResult = true;
-		int iLength = s.length( );
-		for( int iItem = 0; iItem < iLength; iItem++ ) {
-			bResult = Character.isDigit( s.charAt( iItem ) );
-			if( !bResult ) {
-				break;
-			}
-		}
-		return( bResult );
 	}
 
 	/**
@@ -182,20 +150,7 @@ public class Util {
 	* Returns generated unique id.
 	*/
 	public static long getUID( ) {
-		return( _lUID++ );
-	}
-	
-	/**
-	* Returns URL prefix without locale
-	* 
-	* @return default URL
-	*/
-	public static String getBaseUrl( ) {
-		String sUrl = GWT.getHostPageBaseURL( );
-		if( sUrl.contains( "?locale=" ) ) {
-			sUrl = sUrl.substring( 0, sUrl.lastIndexOf( "?locale=" ) );
-		}
-		return( sUrl );
+		return( lUID++ );
 	}
 
 	/**

@@ -22,7 +22,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import org.homedns.mkh.databuffer.SessionParameters;
+
+import org.homedns.mkh.databuffer.api.SessionParameters;
 
 /**
  * Abstract database session parameters
@@ -33,13 +34,13 @@ public abstract class AbstractSessionParameters implements SessionParameters {
 	private Map< String, String > _values = new HashMap< String, String >( );
 	
 	/**
-	 * @see org.homedns.mkh.databuffer.SessionParameters#set2Session(java.sql.Connection)
+	 * @see org.homedns.mkh.databuffer.api.SessionParameters#set2Session(java.sql.Connection)
 	 */
 	@Override
 	public abstract void set2Session( Connection conn ) throws SQLException;
 
 	/**
-	 * @see org.homedns.mkh.databuffer.SessionParameters#setParameter(java.lang.String, java.lang.String)
+	 * @see org.homedns.mkh.databuffer.api.SessionParameters#setParameter(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void setParameter( String sKey, String sName ) {
@@ -47,7 +48,7 @@ public abstract class AbstractSessionParameters implements SessionParameters {
 	}
 
 	/**
-	 * @see org.homedns.mkh.databuffer.SessionParameters#getParameter(java.lang.String)
+	 * @see org.homedns.mkh.databuffer.api.SessionParameters#getParameter(java.lang.String)
 	 */
 	@Override
 	public String getParameter( String sKey ) {
@@ -55,7 +56,7 @@ public abstract class AbstractSessionParameters implements SessionParameters {
 	}
 
 	/**
-	 * @see org.homedns.mkh.databuffer.SessionParameters#setParameterValue(java.lang.String, java.lang.String)
+	 * @see org.homedns.mkh.databuffer.api.SessionParameters#setParameterValue(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void setParameterValue( String sKey, String sValue ) {
@@ -63,7 +64,7 @@ public abstract class AbstractSessionParameters implements SessionParameters {
 	}
 
 	/**
-	 * @see org.homedns.mkh.databuffer.SessionParameters#getParameterValue(java.lang.String)
+	 * @see org.homedns.mkh.databuffer.api.SessionParameters#getParameterValue(java.lang.String)
 	 */
 	@Override
 	public String getParameterValue( String sKey ) {

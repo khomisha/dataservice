@@ -18,7 +18,7 @@
 
 package org.homedns.mkh.dataservice.server.handler;
 
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBuffer;
 import org.homedns.mkh.dataservice.shared.ClosePagingConnRequest;
 import org.homedns.mkh.dataservice.shared.Request;
 import org.homedns.mkh.dataservice.shared.Response;

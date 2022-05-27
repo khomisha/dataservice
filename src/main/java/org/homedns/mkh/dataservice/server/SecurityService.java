@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2017 Mikhail Khodonov
+ * Copyright 2013-2022 Mikhail Khodonov
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,9 @@
 
 package org.homedns.mkh.dataservice.server;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.naming.ConfigurationException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -36,15 +34,14 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
-import org.homedns.mkh.databuffer.DBTransaction;
-import org.homedns.mkh.databuffer.DataBuffer;
+import org.homedns.mkh.databuffer.api.DBMFactory;
+import org.homedns.mkh.databuffer.api.DataBuffer;
+import org.homedns.mkh.databuffer.api.DataBufferManager;
+import org.homedns.mkh.databuffer.api.DataSourceWrapper;
+import org.homedns.mkh.databuffer.api.GenericDataSource;
 import org.homedns.mkh.dataservice.shared.Id;
-
 import java.io.Serializable;
-
-import javax.security.auth.callback.TextInputCallback;
 
 /**
  * Application login module. JAAS configuration file example (for Tomcat): <br>
@@ -134,24 +131,18 @@ public class SecurityService implements LoginModule {
         callbacks = new Callback[] {
         	new NameCallback( "username" ),
         	new PasswordCallback( "password: ", false ),
-        	new LanguageCallback( ),
-        	new TextInputCallback( "dateTimeFmt" )
-        };
+        	new LanguageCallback( )
+         };
         boolean bLogin = false;
         CheckupService cs = null;
         try {
 			callbackHandler.handle( callbacks );
 			String sClassName = ( String )options.get( "checkup_service_class" );
 			LOG.info( "locale: " + getLocale( ).getLanguage( ) );
-			LOG.info( "datetime format: " + getClientDateFormat( ) );
 			LOG.debug( "checkup service class: " + sClassName );
+			DataBufferManager dbm = getDataBufferMgr( );
 			cs = ( CheckupService )Class.forName( sClassName ).newInstance( );
-			cs.init( 
-				options, 
-				getDataSource( "jdbc_login_resource_name" ), 
-				getLocale( ), 
-				new SimpleDateFormat( getClientDateFormat( ) ) 
-			);
+			cs.init( options, dbm );
 			if( !cs.isLocked( ) ) {
 				cs.incrementCount( );
 	        	bLogin = cs.isValidUser( getLogin( ), getPass( ) );
@@ -197,16 +188,15 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean commit( ) throws LoginException {
-		DataBufferManager dbm = null;
+		DBManager dbm = null;
 		try {
-			dbm = getDataBufferMgr( );
+			dbm = ( DBManager )getDataBufferMgr( );
+			dbm.addDataSource( getDataSource( "jdbc_db_resource_name" ) );
 			subject.getPrincipals( ).add( new UserPrincipal( getLogin( ) ) );
 			subject.getPrincipals( ).add( new LocalePrincipal( getLocale( ) ) );
 			// see user_access_right.dbuf for example
-			String sDataBufferName = ( String )options.get( "access_rights_db" );
-			Id id = new Id( );
-			id.setName( sDataBufferName );
-			DataBuffer accessDB = getDataBuffer( dbm, id );
+			Id id = new Id( ( String )options.get( "access_rights_db" ) );
+			DataBuffer accessDB = dbm.getDataBuffer( id );
 			accessDB.retrieve( Arrays.asList( new Serializable[] { getLogin( ) } ) );
 			subject.getPrincipals( ).add( new AccessRightsPrincipal( accessDB, id ) );
 		}
@@ -236,9 +226,9 @@ public class SecurityService implements LoginModule {
 	 */
 	@Override
 	public boolean logout( ) throws LoginException {
-		DataBufferManager dbm = null;
+		DBManager dbm = null;
 		try {
-			dbm = Context.getInstance( ).getDataBufferManager( );
+			dbm = ( DBManager )Context.getInstance( ).getDataBufferManager( );
 			if( dbm != null ) {
 				LOG.debug( "user: " + getLogin( ) + " logout" );
 				dbm.close( );
@@ -313,41 +303,26 @@ public class SecurityService implements LoginModule {
 	}
 	
 	/**
-	 * Returns client date time format
-	 * 
-	 * @return the date time format
-	 */
-	protected String getClientDateFormat( ) {
-		return( ( ( TextInputCallback )callbacks[ 3 ] ).getText( ) );
-	}
-	
-	/**
 	 * Returns data source.
 	 * 
-	 * @param sResourceName
+	 * @param sResource
 	 *            the resource name
 	 * 
 	 * @return the data source
 	 * 
 	 * @throws NamingException
 	 */
-	protected DataSource getDataSource( String sResourceName ) throws NamingException {
+	protected GenericDataSource getDataSource( String sResource ) throws NamingException {
 		javax.naming.Context initContext = new InitialContext( );
-		javax.naming.Context envContext = ( javax.naming.Context )initContext.lookup( 
-			"java:/comp/env" 
-		);
+		javax.naming.Context envContext = ( javax.naming.Context )initContext.lookup( "java:/comp/env" );
 		if( envContext == null ) {
 			throw new ConfigurationException( Context.getLocalizedMsg( "noContext" ) );
 		}
-		DataSource dataSource = ( DataSource )envContext.lookup( 
-			( String )options.get( sResourceName ) 
-		);
-		if( dataSource == null ) {
-			throw new ConfigurationException( 
-				Context.getLocalizedMsg( "noDatasource" ) + ": " + sResourceName 
-			);			
+		DataSource ds = ( DataSource )envContext.lookup( ( String )options.get( sResource ) );
+		if( ds == null ) {
+			throw new ConfigurationException( Context.getLocalizedMsg( "noDatasource" ) + ": " + sResource );			
 		}
-		return( dataSource );
+		return( new DataSourceWrapper( ( String )options.get( sResource ), ds ) );
 	}
 	
 	/**
@@ -360,31 +335,12 @@ public class SecurityService implements LoginModule {
 	protected DataBufferManager getDataBufferMgr( ) throws Exception {
 		DataBufferManager dbm = Context.getInstance( ).getDataBufferManager( );
 		if( dbm == null ) {
-			DataSource dataSource = getDataSource( "jdbc_db_resource_name" );
-			dbm = new DataBufferManager( 
-				new DBTransaction( dataSource ),
-				getLocale( ),
-				new SimpleDateFormat( getClientDateFormat( ) )
-			);
+			GenericDataSource ds = getDataSource( "jdbc_login_resource_name" );
+			dbm = DBMFactory.create( DBManager.class, Arrays.asList( new GenericDataSource[] { ds } ) );
+			dbm.setLocale( getLocale( ) );
+			dbm.setResource( Context.getInstance( ).getFullResourcePath( ), false, null );
 			Context.getInstance( ).setDataBufferManager( dbm );
 		}
 		return( dbm );
-	}
-	
-	/**
-	 * Returns data buffer
-	 * 
-	 * @param dbm
-	 *            the data buffer manager
-	 * @param id
-	 *            the identification object
-	 * 
-	 * @return the data buffer
-	 * 
-	 * @throws Exception 
-	 */
-	private DataBuffer getDataBuffer( DataBufferManager dbm, Id id ) throws Exception {
-		LOG.debug( "security service db's: " + id.getName( ) );
-		return( dbm.getDataBuffer( id ) );
 	}
 }
