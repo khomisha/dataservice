@@ -279,10 +279,8 @@ public abstract class Presenter implements HandlerRegistry {
 	 */
 	protected DataBufferDesc getDataBufferDesc( Response response ) {
 		String sJson = response.getDataBufferDesc( );
-		LOG.config( sJson );
-		DataBufferDesc desc = DataBufferDesc.DECODER.decode( 
-			JSONParser.parseStrict( sJson )
-		);
+		LOG.config( LOG.getName( ) + ": " + sJson );
+		DataBufferDesc desc = DataBufferDesc.DECODER.decode( JSONParser.parseStrict( sJson ) );
 		return( desc );
 	}
 

@@ -84,7 +84,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 			response instanceof RetrieveResponse
 		) {
 			for( View view : getViewList( ) ) {
-				LOG.config( "onResponse: " + getID( ).toString( ) + ": calls onResponse: " + view.getID( ).toString( ) );
+				LOG.config( LOG.getName( ) + ": " + getID( ).toString( ) + ": calls onResponse: " + view.getID( ).toString( ) );
 				view.onResponse( response );
 			}
 		}
@@ -98,7 +98,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 		View newView = getInitiatingView( );
 		if( newView != null ) {
 			newView.setCache( getViewCache( ) );
-			LOG.config( "onCacheLoaded: " + getID( ).toString( ) + ": calls init view: " + newView.getID( ).toString( ) );
+			LOG.config( LOG.getName( ) + ": " + "onCacheLoaded: " + getID( ).toString( ) + ": calls init view: " + newView.getID( ).toString( ) );
 			newView.init( getDescription( ) );
 			setInitiatingView( null );
 		}
@@ -110,14 +110,14 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 	@Override
 	public void onRegister( RegisterViewEvent event ) {
 		final View view = event.getView( );
-		LOG.config( getID( ).toString( ) + ": catch register event from view: " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
+		LOG.config( LOG.getName( ) + ": " + getID( ).toString( ) + ": catch register event from view: " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
 		if( !add( view ) ) {
 			return;
 		}
 		if( isInit( ) ) {
 			// presenter and view cache were initialized therefore can init view and
 			// shouldn't need send request to the server 
-			LOG.config( "onRegister: " + getID( ).toString( ) + ": calls init view: " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
+			LOG.config( LOG.getName( ) + ": " + "onRegister: " + getID( ).toString( ) + ": calls init view: " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
 			initView( view );
 		} else {
 			if( isRegisterLock( ) ) {
@@ -129,7 +129,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 			    			boolean bAgain = true;
 			    			if( !isRegisterLock( ) ) {
 			    				if( isInit( ) ) {
-				    				LOG.config( "onRegister: RepeatingCommand: " + getID( ).toString( ) + ": calls initView(): " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
+				    				LOG.config( LOG.getName( ) + ": " + "onRegister: RepeatingCommand: " + getID( ).toString( ) + ": calls initView(): " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( ) );
 			    					initView( view );
 				    				bAgain = false;
 			    				}
@@ -140,7 +140,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 			    );	
 			} else {
 				LOG.config( 
-					"onRegister: no lock:" + 
+					LOG.getName( ) + ": " + "onRegister: no lock:" + 
 					getID( ).toString( ) + 
 					": calls dataRequest(): " + view.getID( ).toString( ) + ": " + view.getClass( ).getName( )
 				);
@@ -159,7 +159,7 @@ public class DataPresenter extends Presenter implements RPCallHandler, RegisterV
 		setRegisterLock( true );
 		setInitiatingView( view );
 		getRequest( ).setInitPresenter( false );
-		LOG.config( view.getID( ).getName( ) + ": dataRequest" );
+		LOG.config( LOG.getName( ) + ": " + view.getID( ).getName( ) + ": dataRequest" );
 		execRPC( getRequest( ) );						
 	}
 	
